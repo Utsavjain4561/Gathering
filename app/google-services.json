@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "362300415284",
+    "firebase_url": "https://hack-47a56.firebaseio.com",
+    "project_id": "hack-47a56",
+    "storage_bucket": "hack-47a56.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:362300415284:android:40e81a65fb6bd157",
+        "android_client_info": {
+          "package_name": "com.example.aryan.hack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "362300415284-08p0kas3pob33lc31psmj7cgcn3t3pv0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.aryan.hack",
+            "certificate_hash": "dbfac5696a40d60db50f0a73c0b4dcb3af027bb5"
+          }
+        },
+        {
+          "client_id": "362300415284-0b51lqjsu3229t20ehvieabt0irj03ka.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAxUTiQTRKuzMBl-2FGoG6eMMojcTwoZI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "362300415284-0b51lqjsu3229t20ehvieabt0irj03ka.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
