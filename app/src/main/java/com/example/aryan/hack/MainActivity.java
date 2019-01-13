@@ -1,5 +1,6 @@
 package com.example.aryan.hack;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -217,6 +218,56 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-        Toast.makeText(MainActivity.this,"on",Toast.LENGTH_LONG).show();
+        String la,lo;
+        final String ke;
+        la = marker.getPosition().latitude+"";
+        lo = marker.getPosition().longitude+"";
+        la=la.replace('.','o');
+        lo= lo.replace('.','o');
+        ke = la + 'n' + lo;
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle("Upvote Or Downvote smartly").setPositiveButton("Upvote", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                final DatabaseReference myref = database.getReference("garbage").child(ke);
+                myref.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Detail detail = dataSnapshot.getValue(Detail.class);
+                        int upvotes = detail.upvotes;
+                        upvotes++;
+                        detail.upvotes = upvotes;
+                        myref.setValue(detail);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        }).setNegativeButton("Downvote", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                final DatabaseReference myref = database.getReference("garbage").child(ke);
+                myref.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Detail detail = dataSnapshot.getValue(Detail.class);
+                        int upvotes = detail.upvotes;
+                        upvotes--;
+                        detail.upvotes = upvotes;
+                        myref.setValue(detail);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        }).show();
     }
 }
