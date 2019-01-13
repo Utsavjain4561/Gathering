@@ -9,11 +9,16 @@ import com.google.android.gms.maps.model.LatLng;
 public class Detail {
     public String description;
     public int upvotes;
-    public LatLng latLng;
-    Detail(String description,int upvotes,LatLng latLng)
+    public String address;
+    Detail(String description,int upvotes,String address)
     {
         this.upvotes = upvotes;
         this.description = description;
-        this.latLng = latLng;
+        this.address = address;
+    }
+    Detail()
+    {
+        this.upvotes = 0;
+        this.description = "no";
     }
 }
