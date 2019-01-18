@@ -11,7 +11,7 @@ public class ExtraDetail  {
     public int upvotes;
     public Date date;
 
-    public ExtraDetail(String latlng,int upvotes,Date date) {
+    public ExtraDetail(int upvotes,String latlng,Date date) {
         this.latlng = latlng;
         this.upvotes = upvotes;
         this.date  =date;

@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "362300415284",
-    "firebase_url": "https://hack-47a56.firebaseio.com",
-    "project_id": "hack-47a56",
-    "storage_bucket": "hack-47a56.appspot.com"
+    "project_number": "890894308430",
+    "firebase_url": "https://garbagemanagement-1ba63.firebaseio.com",
+    "project_id": "garbagemanagement-1ba63",
+    "storage_bucket": "garbagemanagement-1ba63.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:362300415284:android:40e81a65fb6bd157",
+        "mobilesdk_app_id": "1:890894308430:android:40e81a65fb6bd157",
         "android_client_info": {
           "package_name": "com.example.aryan.hack"
         }
       },
       "oauth_client": [
         {
-          "client_id": "362300415284-08p0kas3pob33lc31psmj7cgcn3t3pv0.apps.googleusercontent.com",
+          "client_id": "890894308430-jo2t6mrrc8d204gur2ec31j9ea8f0b0g.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.aryan.hack",
@@ -23,13 +23,13 @@
           }
         },
         {
-          "client_id": "362300415284-0b51lqjsu3229t20ehvieabt0irj03ka.apps.googleusercontent.com",
+          "client_id": "890894308430-rkv0dmeijlf9hhphmmp00qc83hegp69c.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCAxUTiQTRKuzMBl-2FGoG6eMMojcTwoZI"
+          "current_key": "AIzaSyAb_DSDruj4RCXo8hjJ7jYMzxX3Okl7ZT0"
         }
       ],
       "services": {
@@ -40,7 +40,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "362300415284-0b51lqjsu3229t20ehvieabt0irj03ka.apps.googleusercontent.com",
+              "client_id": "890894308430-rkv0dmeijlf9hhphmmp00qc83hegp69c.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

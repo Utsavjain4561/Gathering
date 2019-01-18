@@ -1,22 +1,32 @@
 package com.example.aryan.hack;
 
-import android.app.Activity;
-import android.content.Context;
+import android.content.ClipData;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
+import android.graphics.Point;
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.provider.Settings;
+import android.renderscript.Script;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.DragEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -29,6 +39,7 @@ import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -38,12 +49,12 @@ import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
-import com.google.android.gms.maps.model.TileOverlay;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -67,15 +78,21 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,GoogleMap.OnInfoWindowClickListener {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,GoogleMap.OnInfoWindowClickListener, View.OnDragListener {
 
+    boolean flag = true;
+    Handler handler1 = new Handler();
+    Handler handler2 = new Handler();
+    Runnable runnable1=null,runnable2=null;
+    private android.widget.RelativeLayout.LayoutParams layoutParams;
     private GoogleMap mMap=null;
-    Detail details;
-    String key;
+    Marker m1=null,m2=null;
+    ImageView img;
     String lat = "";
     String lng = "";
     String address="";
     int PLACE_PICKER_REQUEST = 1;
+    private static final String IMAGEVIEW_TAG = "icon bitmap";
     GroundOverlay groundOverlay1=null;
     int meanUpvotes = 0;
     public static final PatternItem DOT = new Dot();
@@ -83,15 +100,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static final PatternItem GAP = new Gap(20);
     public static final List<PatternItem> PATTERN_POLYGON_ALPHA = Arrays.asList(GAP, DASH);
 
-    private final String API_KEY="AIzaSyCU5oBs1VJutdJhnH5i3VKqYZNoN9TTtiY";
+    private final String API_KEY="AIzaSyAaePoPKF2O8agR5O8m_0E4E4_6Xudbkq4";
     private ArrayList<String> latlng=new ArrayList<>();
-    private ArrayList<ExtraDetail> extraDetails = new ArrayList<>();
+    ArrayList<ExtraDetail> extraDetails = new ArrayList<>();
     private List<LatLng> lines = new ArrayList<LatLng>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         address = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
+        img = findViewById(R.id.iv);
+        img.setOnDragListener(this);
+        img.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                ClipData data = ClipData.newPlainText("", "");
+                View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(view);
+                view.startDrag(data, shadowBuilder, view, 0);
+                return true;
+            }
+        });
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -103,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onPlaceSelected(Place place) {
                 // TODO: Get info about the selected place.
                 Log.i("rd", "Place: " + place.getName());
-                mMap.addMarker(new MarkerOptions().position(place.getLatLng()).draggable(true).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                mMap.addMarker(new MarkerOptions().draggable(true).position(place.getLatLng()).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A"))));
             }
             @Override
             public void onError(Status status) {
@@ -145,32 +173,65 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-       mMap=googleMap;
+        mMap=googleMap;
+      //  mMap.addMarker(new MarkerOptions().position(new LatLng(11,11)).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A"))));
         mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
         mMap.setOnInfoWindowClickListener(this);
        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
            @Override
-           public boolean onMarkerClick(Marker marker) {
-               marker.setIcon(BitmapDescriptorFactory.defaultMarker());
+           public boolean onMarkerClick(final Marker marker) {
                marker.setDraggable(false);
-               FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
                local_lat = marker.getPosition().latitude+"";
                local_lng = marker.getPosition().longitude+"";
                local_lat=local_lat.replace('.','o');
                local_lng= local_lng.replace('.','o');
                local_key = local_lat + 'n' + local_lng;
+               FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
                // Toast.makeText(MainActivity.this,local_key,Toast.LENGTH_LONG).show();
                final DatabaseReference myref = firebaseDatabase.getReference("garbage").child(local_key);
                myref.addListenerForSingleValueEvent(new ValueEventListener() {
                    @Override
                    public void onDataChange(DataSnapshot dataSnapshot) {
-                       if(dataSnapshot.exists()) {
-                          // Toast.makeText(MainActivity.this,""+local_details.upvotes,Toast.LENGTH_LONG).show();
+                       if (!dataSnapshot.exists())
+                       {
+                           marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A")));
+                           AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                           final EditText input = new EditText(MainActivity.this);
+                           input.setHint("Description");
+                           LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                   LinearLayout.LayoutParams.MATCH_PARENT,
+                                   LinearLayout.LayoutParams.MATCH_PARENT);
+                           input.setLayoutParams(lp);
+                           builder.setView(input);
+                           builder.setTitle("Description").setNegativeButton("Submit", new DialogInterface.OnClickListener() {
+                               @Override
+                               public void onClick(DialogInterface dialogInterface, int i) {
+
+                                   myref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                       @Override
+                                       public void onDataChange(DataSnapshot dataSnapshot) {
+                                           if(dataSnapshot.exists()) {
+                                               // Toast.makeText(MainActivity.this,""+local_details.upvotes,Toast.LENGTH_LONG).show();
+                                           }
+                                           else
+                                           {
+                                               local_details = new Detail(input.getText().toString(),0,address);
+                                               myref.setValue(local_details);
+                                           }
+                                       }
+
+                                       @Override
+                                       public void onCancelled(DatabaseError databaseError) {
+
+                                       }
+                                   });
+                               }
+                           }).show();
                        }
                        else
                        {
-                           local_details = new Detail("hi kaise ho janeman",0,address);
-                           myref.setValue(local_details);
+                               marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A")));
                        }
                    }
 
@@ -179,6 +240,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                    }
                });
+
                marker.showInfoWindow();
                return false;
            }
@@ -250,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         lo= lo.replace('.','o');
         ke = la + 'n' + lo;
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("Upvote Or Downvote smartly").setPositiveButton("Upvote", new DialogInterface.OnClickListener() {
+        builder.setTitle("Upvote/Downvote").setPositiveButton("Upvote", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -301,7 +363,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     void updateMap()
     {
-
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("garbage");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -319,14 +380,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     //latlng.add(latlngString);
                     Detail placeDetail = post.getValue(Detail.class);
                     Log.e("Place upvotes",placeDetail.upvotes+"");
-                    extraDetails.add(new ExtraDetail(latlngString,placeDetail.upvotes,new Date()));
+                    extraDetails.add(new ExtraDetail(placeDetail.upvotes,latlngString,new Date()));
                     meanUpvotes+=placeDetail.upvotes;
                     Log.e("Sum ",meanUpvotes+"");
                     Marker marker;
-                    if (post.getValue(Detail.class).address == address) {
-                        marker = mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title("Details").snippet("Description: " + post.child("description").getValue() + "\n" + "Upvotes: " + post.child("upvotes").getValue()));
+                    if (post.getValue(Detail.class).address.equals(address)) {
+                        marker = mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A"))).title("Details").snippet("Description: " + post.child("description").getValue() + "\n" + "Upvotes: " + post.child("upvotes").getValue()));
                     }else
-                        marker = mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(lat),Double.parseDouble(lng))).snippet("Description: " + post.child("description").getValue()+"\n"+"Upvotes: " + post.child("upvotes").getValue()).title("Title"));
+                        marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A"))).position(new LatLng(Double.parseDouble(lat),Double.parseDouble(lng))).snippet("Description: " + post.child("description").getValue()+"\n"+"Upvotes: " + post.child("upvotes").getValue()).title("Title"));
                     marker.showInfoWindow();
                 }
                 sortLocations();
@@ -343,29 +404,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
+
+    @Override
+    public boolean onDrag(View view, DragEvent dragEvent) {
+        int action = dragEvent.getAction();
+        switch (action)
+        {
+            case DragEvent.ACTION_DRAG_STARTED:
+                Toast.makeText(MainActivity.this,"started",Toast.LENGTH_LONG).show();
+                break;
+            case DragEvent.ACTION_DRAG_ENDED:
+                Toast.makeText(MainActivity.this,"ended",Toast.LENGTH_LONG).show();
+                float x = dragEvent.getX();
+                float y = dragEvent.getY();
+                view.setX(x);
+                view.setY(y);
+                Projection projection = mMap.getProjection();
+                LatLngBounds latLngBounds = projection.getVisibleRegion().latLngBounds;
+                LatLng draggedMarker = projection.fromScreenLocation(new Point((int)x,(int)y));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(11,11)).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A"))).draggable(true));
+
+
+                break;
+            default:
+                break;
+        }
+        return false;
+    }
+
     private class SortComparator implements Comparator<ExtraDetail> {
         private int maxUpvotes;
         private int minUpvotes;
-        private Date maxDate;
-        private Date minDate;
-        public SortComparator(int maxUpvotes, int minUpvotes, Date maxDate, Date minDate) {
+        public SortComparator(int maxUpvotes, int minUpvotes) {
             this.maxUpvotes = maxUpvotes;
             this.minUpvotes = minUpvotes;
-            this.maxDate = maxDate;
-            this.minDate = minDate;
         }
 
         @Override
         public int compare(ExtraDetail extraDetail, ExtraDetail t1) {
-            double normalizedDate1 = 1-(extraDetail.date.getTime() - minDate.getTime())*1.0
-                    /(maxDate.getTime() -minDate.getTime());
-            double normalizedDate2 = 1-(t1.date.getTime() - minDate.getTime())*1.0
-                    /(maxDate.getTime() -minDate.getTime());
-            double normalizedUpvotes1= 1-(extraDetail.upvotes - minUpvotes)*1.0
+            double normalizedUpvotes1= (extraDetail.upvotes - minUpvotes)*1.0
                     /(maxUpvotes  - minUpvotes);
-            double normalizedUpvotes2= 1-(t1.upvotes - minUpvotes)*1.0
+            double normalizedUpvotes2= (t1.upvotes - minUpvotes)*1.0
                     /(maxUpvotes  - minUpvotes);
-            return  (int)(((normalizedDate1-normalizedDate2)+(normalizedUpvotes1 - normalizedUpvotes2))*100000);
+            return -extraDetail.upvotes+t1.upvotes;
         }
 
         @Override
@@ -376,13 +457,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void sortLocations(){
         int maxUpvotes=Integer.MIN_VALUE;
         int minUpvotes= Integer.MAX_VALUE;
-        Date maxDate = new Date(Long.MIN_VALUE);
-        Date minDate = new Date(Long.MAX_VALUE);
-
         for(int i=0;i<extraDetails.size();i++){
 
             int upvotes = extraDetails.get(i).upvotes;
-            Date date = extraDetails.get(i).date;
             if(upvotes>maxUpvotes){
                 maxUpvotes = upvotes;
             }
@@ -390,14 +467,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 minUpvotes = upvotes;
 
             }
-            if(date.compareTo(maxDate)>0){
-                maxDate = date;
-            }
-            else if(date.compareTo(minDate)<0){
-                minDate = date;
-            }
         }
-        Collections.sort(extraDetails,new SortComparator(maxUpvotes,minUpvotes,maxDate,minDate));
+        Collections.sort(extraDetails,new SortComparator(maxUpvotes,minUpvotes));
     }
     private class Directions extends AsyncTask<String,Void,String> {
         public String makeConnection(ArrayList<String> latlng){
@@ -444,10 +515,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.e(i+":",extraDetails.get(i).upvotes+"");
             }
             int i=0;
-            while(i<extraDetails.size() && meanUpvotes <= extraDetails.get(i).upvotes ) {
+            while(i<extraDetails.size()&&meanUpvotes <= extraDetails.get(i).upvotes) {
                 //TODO : Add threshold for upvotes
                 latlng.add( extraDetails.get(i).latlng);
-
                 i++;
             }
             Log.e("Before",latlng+"");
@@ -495,8 +565,74 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             polylineOptions.startCap(new RoundCap());
 
             mMap.addPolyline(polylineOptions.addAll(lines).width(10).color(Color.BLUE));
+            Marker marker = mMap.addMarker(new MarkerOptions().position(lines.get(0)).icon(BitmapDescriptorFactory.defaultMarker()).flat(true));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lines.get(0),10));
+            animateMarker(mMap, marker, lines, false);
 
 
+        }
+        private void animateMarker(GoogleMap myMap, final Marker marker, final List<LatLng> directionPoint,
+                                          final boolean hideMarker) {
+            final long start = SystemClock.uptimeMillis();
+            if(flag) {
+                if(runnable2!=null)
+                handler2.removeCallbacks(runnable2);
+                if (m2!=null)
+                {
+                    m2.setVisible(false);
+                }
+                m1 = marker;
+                flag = false;
+                handler1.post(runnable1 =new Runnable() {
+                    int i = 0;
+
+                    @Override
+                    public void run() {
+                        long elapsed = SystemClock.uptimeMillis() - start;
+                        if (i < directionPoint.size())
+                            marker.setPosition(directionPoint.get(i));
+                        i++;
+                        if (i == directionPoint.size())
+                            i = 0;
+                        // Post again 16ms later.
+                        handler1.postDelayed(this, 16);
+                        if (hideMarker) {
+                            marker.setVisible(false);
+                        } else {
+                            marker.setVisible(true);
+                        }
+                    }
+                });
+            }
+            else
+            {
+                if (runnable1!=null)
+                handler1.removeCallbacks(runnable1);
+                if (m1!=null)
+                    m1.setVisible(false);
+                m2=marker;
+                flag = true;
+                handler2.post(runnable2 = new Runnable() {
+                    int i = 0;
+
+                    @Override
+                    public void run() {
+                        long elapsed = SystemClock.uptimeMillis() - start;
+                        if (i < directionPoint.size())
+                            marker.setPosition(directionPoint.get(i));
+                        i++;
+                        if (i == directionPoint.size())
+                            i = 0;
+                        // Post again 16ms later.
+                        handler1.postDelayed(this, 16);
+                        if (hideMarker) {
+                            marker.setVisible(false);
+                        } else {
+                            marker.setVisible(true);
+                        }
+                    }
+                });
+            }
         }
         private List<LatLng> decodePolyline(String encoded) {
 
@@ -546,4 +682,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        address = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
+    }
+    Bitmap writeondrawable(int id,String text)
+    {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),id).copy(Bitmap.Config.ARGB_8888,true);
+        Paint paint = new Paint();
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(60);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawText(text,bitmap.getWidth()-50,bitmap.getHeight(),paint);
+        return bitmap;
+    }
 }
