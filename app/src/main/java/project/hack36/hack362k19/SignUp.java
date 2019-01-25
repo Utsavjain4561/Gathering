@@ -43,7 +43,6 @@ public class SignUp extends AppCompatActivity implements AdapterView.OnItemSelec
     private TextInputEditText password_field;
     private TextInputEditText place_field;
     private Spinner sp;
-    private TextView login;
     String mVerificationId;
     PhoneAuthProvider.ForceResendingToken mResendToken;
     private Button signUp;
@@ -56,10 +55,9 @@ public class SignUp extends AppCompatActivity implements AdapterView.OnItemSelec
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.signup_employee);
+        setContentView(R.layout.activity_sign_up);
         mAuth = FirebaseAuth.getInstance();
         progressBar = findViewById(R.id.progressBar);
-        login=findViewById(R.id.login);
         signUp=findViewById(R.id.signUp_button);
         name_field = findViewById(R.id.name1);
         num_field = findViewById(R.id.mobile1);
@@ -116,7 +114,8 @@ public class SignUp extends AppCompatActivity implements AdapterView.OnItemSelec
         //Added data to database
         databaseRef = FirebaseDatabase.getInstance().getReference("gatherings");
         final String key1 = placeName.toLowerCase().replaceAll(" ","");
-        databaseRef.child(key1).child(role).child(num).setValue(name);
+        AuthDetails authDetails = new AuthDetails(name, password);
+        databaseRef.child(key1).child(role).child(num).setValue(authDetails);
         // session created using sharedPreference
         SessionManager sessionManager = new SessionManager(getApplicationContext());
         sessionManager.createLoginSession(num,role,placeName);
@@ -185,7 +184,24 @@ public class SignUp extends AppCompatActivity implements AdapterView.OnItemSelec
 
 
     void go_to_respective_activity(){
+        if(role.equals("cleaner")){
+            Intent intent=new Intent(SignUp.this, CleanerMainActivity.class);
+            startActivity(intent);
+            finish();
 
+        }
+        else if(role.equals("admin")){
+            Intent intent=new Intent(SignUp.this, AdminMainActivity.class);
+            startActivity(intent);
+            finish();
+
+        }
+        else{
+            Intent intent=new Intent(SignUp.this, DoctorMainActivity.class);
+            startActivity(intent);
+            finish();
+
+        }
     }
 
     void signInWithPhoneAuthCredential(PhoneAuthCredential phoneAuthCredential)

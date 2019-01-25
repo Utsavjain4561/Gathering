@@ -35,13 +35,15 @@ import java.util.HashMap;
 public class LoginActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
 
     private Button login, guestLogin;
+    private TextView signUp;
     private Spinner spinner;
     private TextInputEditText inputPhone, inputPassword;
     private Button forgot_password;
     private FirebaseAuth auth;
     private ProgressBar progressBar;
-    private DatabaseReference databaseRef;
-    private String phone, password, tmp1, tmp2, tmp3;
+    private DatabaseReference databaseRef, databaseRef2;
+    private String phone, password, tmp1, tmp2, tmp3, role;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +75,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
         login = findViewById(R.id.login_press);
         guestLogin = findViewById(R.id.guest_login_press);
+        signUp = findViewById(R.id.goSign);
         inputPhone = findViewById(R.id.phone);
         inputPassword = findViewById(R.id.password);
         forgot_password = findViewById(R.id.btn_reset_password);
@@ -83,7 +86,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
         // spinner list adapter population code
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.planets_array, android.R.layout.simple_spinner_item);
+                R.array.choices, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
@@ -97,19 +100,10 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
             }
         });
 
-        admin.setOnClickListener(new View.OnClickListener() {
+        signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, signupAdmin.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-
-        employee.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, signupEmployee.class);
+                Intent intent = new Intent(LoginActivity.this, SignUp.class);
                 startActivity(intent);
                 finish();
             }
@@ -136,7 +130,42 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
                 progressBar.setVisibility(View.VISIBLE);
 
+
                 //authenticate user
+                databaseRef = FirebaseDatabase.getInstance().getReference("gathering");
+                databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        String primKey = dataSnapshot.getKey();
+                        databaseRef2 = FirebaseDatabase.getInstance().getReference(primKey);
+                        databaseRef2.child(role).child(phone).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if(dataSnapshot.exists()){
+                                    AuthDetails authDetails = dataSnapshot.getValue(AuthDetails.class);
+                                    if(authDetails.getPassword().equals(password)){
+
+                                        Toast.makeText(getApplicationContext(), "Logged in!!", Toast.LENGTH_SHORT).show();
+                                        go_to_respective_activity();
+
+                                    }
+
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
 
 
             }
@@ -153,9 +182,30 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
     }
 
+    void go_to_respective_activity(){
+        if(role.equals("cleaner")){
+            Intent intent=new Intent(LoginActivity.this, CleanerMainActivity.class);
+            startActivity(intent);
+            finish();
+
+        }
+        else if(role.equals("admin")){
+            Intent intent=new Intent(LoginActivity.this, AdminMainActivity.class);
+            startActivity(intent);
+            finish();
+
+        }
+        else{
+            Intent intent=new Intent(LoginActivity.this, DoctorMainActivity.class);
+            startActivity(intent);
+            finish();
+
+        }
+    }
+
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
+        role = adapterView.getItemAtPosition(i).toString();
     }
 
     @Override
@@ -175,7 +225,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     }
 
     void goto_Doctor(){
-        Intent intent = new Intent(LoginActivity.this, DoctorMainActivity);
+        Intent intent = new Intent(LoginActivity.this, DoctorMainActivity.class);
         startActivity(intent);
         finish();
     }
