@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1"
+    android:padding="5dp" >
+
+    <fragment
+        android:id="@+id/place_autocomplete_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+        />
+
+    <EditText
+        android:id="@+id/event_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="20"
+        android:inputType="text"
+        android:layout_weight="0.03"
+        android:hint="Event name"
+        android:textColorHint="@color/colorPrimary"/>
+
+    <EditText
+        android:id="@+id/startDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:editable="false"
+        android:text="Select start date"
+        android:ems="20"
+        android:layout_margin="4dp"
+        android:textSize="20dp"
+        android:layout_weight="0.03"
+        android:clickable="true"
+        android:textColor="@color/colorPrimary"/>
+
+    <EditText
+        android:id="@+id/endDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:editable="false"
+        android:text="Select end date"
+        android:ems="20"
+        android:layout_margin="4dp"
+        android:textSize="20dp"
+        android:layout_weight="0.03"
+        android:clickable="true"
+        android:textColor="@color/colorPrimary"/>
+
+    <EditText
+        android:id="@+id/location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select location"
+        android:ems="20"
+        android:layout_weight="0.03"
+        android:layout_margin="4dp"
+        android:textSize="20dp"
+        android:clickable="true"
+        android:editable="false"
+        android:textColor="@color/colorPrimary"/>
+
+
+    <Button
+        android:id="@+id/ok"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.01"
+        android:text="Ok"
+        android:background="#db3236"
+        android:textColor="#FFFFFF"/>
+
+</LinearLayout>
