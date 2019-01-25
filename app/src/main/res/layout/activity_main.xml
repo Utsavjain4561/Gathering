@@ -25,17 +25,13 @@
         android:layout_below="@id/toolbar"
         tools:context=".MainActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:paddingRight="20dp"
-        android:paddingBottom="20dp">
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_add_location_black_24dp"
-        android:id="@+id/iv"/>
-    </LinearLayout>
+        android:id="@+id/iv"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:paddingRight="20dp"
+        android:paddingBottom="20dp"/>
 </RelativeLayout>

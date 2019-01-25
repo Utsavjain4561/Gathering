@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        updateMap();
+      //  updateMap();
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -174,121 +174,121 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap=googleMap;
-      //  mMap.addMarker(new MarkerOptions().position(new LatLng(11,11)).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A"))));
+        //  mMap.addMarker(new MarkerOptions().position(new LatLng(11,11)).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A"))));
         mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
         mMap.setOnInfoWindowClickListener(this);
-       mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-           @Override
-           public boolean onMarkerClick(final Marker marker) {
-               marker.setDraggable(false);
-               local_lat = marker.getPosition().latitude+"";
-               local_lng = marker.getPosition().longitude+"";
-               local_lat=local_lat.replace('.','o');
-               local_lng= local_lng.replace('.','o');
-               local_key = local_lat + 'n' + local_lng;
-               FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-               // Toast.makeText(MainActivity.this,local_key,Toast.LENGTH_LONG).show();
-               final DatabaseReference myref = firebaseDatabase.getReference("garbage").child(local_key);
-               myref.addListenerForSingleValueEvent(new ValueEventListener() {
-                   @Override
-                   public void onDataChange(DataSnapshot dataSnapshot) {
-                       if (!dataSnapshot.exists())
-                       {
-                           marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green,"A")));
-                           AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(final Marker marker) {
+                marker.setDraggable(false);
+                local_lat = marker.getPosition().latitude+"";
+                local_lng = marker.getPosition().longitude+"";
+                local_lat=local_lat.replace('.','o');
+                local_lng= local_lng.replace('.','o');
+                local_key = local_lat + 'n' + local_lng;
+                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                // Toast.makeText(MainActivity.this,local_key,Toast.LENGTH_LONG).show();
+                final DatabaseReference myref = firebaseDatabase.getReference("garbage").child(local_key);
+                myref.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (!dataSnapshot.exists())
+                        {
+                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green,"A")));
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
-                           final EditText input = new EditText(MainActivity.this);
-                           input.setHint("Description");
-                           LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                                   LinearLayout.LayoutParams.MATCH_PARENT,
-                                   LinearLayout.LayoutParams.MATCH_PARENT);
-                           input.setLayoutParams(lp);
-                           builder.setView(input);
-                           builder.setTitle("Description").setNegativeButton("Submit", new DialogInterface.OnClickListener() {
-                               @Override
-                               public void onClick(DialogInterface dialogInterface, int i) {
+                            final EditText input = new EditText(MainActivity.this);
+                            input.setHint("Description");
+                            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.MATCH_PARENT);
+                            input.setLayoutParams(lp);
+                            builder.setView(input);
+                            builder.setTitle("Description").setNegativeButton("Submit", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
 
-                                   myref.addListenerForSingleValueEvent(new ValueEventListener() {
-                                       @Override
-                                       public void onDataChange(DataSnapshot dataSnapshot) {
-                                           if(dataSnapshot.exists()) {
+                                    myref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            if(dataSnapshot.exists()) {
 
-                                           }
-                                           else{
-                                               local_details = new Detail(input.getText().toString(),0,address);
-                                               Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                                               try {
-                                                   List<Address> addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude,1);
-                                                   String add = addresses.get(0).getLocality();
-                                                   marker.setTitle(add);
-                                               } catch (IOException e) {
-                                                   marker.setTitle("Details");
-                                                   Log.e("hey",e.toString());
-                                                   e.printStackTrace();
-                                               }
-                                               marker.setSnippet("Description: "+input.getText()+"\nUpvotes: "+0);
-                                               marker.showInfoWindow();
-                                               myref.setValue(local_details);
-                                           }
-                                       }
+                                            }
+                                            else{
+                                                local_details = new Detail(input.getText().toString(),0,address);
+                                                Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                                                try {
+                                                    List<Address> addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude,1);
+                                                    String add = addresses.get(0).getLocality();
+                                                    marker.setTitle(add);
+                                                } catch (IOException e) {
+                                                    marker.setTitle("Details");
+                                                    Log.e("hey",e.toString());
+                                                    e.printStackTrace();
+                                                }
+                                                marker.setSnippet("Description: "+input.getText()+"\nUpvotes: "+0);
+                                                marker.showInfoWindow();
+                                                myref.setValue(local_details);
+                                            }
+                                        }
 
-                                       @Override
-                                       public void onCancelled(DatabaseError databaseError) {
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
 
-                                       }
-                                   });
-                               }
-                           }).show();
-                       }
-                       else
-                       {
-                          if (dataSnapshot.child("address").getValue().equals(address))
-                               marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green,"A")));
-                           else
-                               marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_black,"A")));
-                       }
-                   }
+                                        }
+                                    });
+                                }
+                            }).show();
+                        }
+                        else
+                        {
+                            if (dataSnapshot.child("address").getValue().equals(address))
+                                marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green,"A")));
+                            else
+                                marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_black,"A")));
+                        }
+                    }
 
-                   @Override
-                   public void onCancelled(DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
-                   }
-               });
+                    }
+                });
 
-               marker.showInfoWindow();
-               return false;
-           }
-       });
+                marker.showInfoWindow();
+                return false;
+            }
+        });
         mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
 
-                            @Override
-                            public void onMarkerDragStart(Marker arg0) {
-                                // TODO Auto-generated method stub
-                                Log.d("System out", "onMarkerDragStart..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
-                                removeCircleToMap(arg0);
+            @Override
+            public void onMarkerDragStart(Marker arg0) {
+                // TODO Auto-generated method stub
+                Log.d("System out", "onMarkerDragStart..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
+                removeCircleToMap(arg0);
 
-                            }
-                            @Override
-                            public void onMarkerDragEnd(Marker arg0) {
-                                // TODO Auto-generated method stub
-                                Log.d("System out", "onMarkerDragEnd..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
-                                addCircleToMap(arg0);
-                            }
+            }
+            @Override
+            public void onMarkerDragEnd(Marker arg0) {
+                // TODO Auto-generated method stub
+                Log.d("System out", "onMarkerDragEnd..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
+                addCircleToMap(arg0);
+            }
 
-                            @Override
-                            public void onMarkerDrag(Marker arg0) {
-                                // TODO Auto-generated method stub
-                                Log.i("System out", "onMarkerDrag...");
-                            }
-                        });
+            @Override
+            public void onMarkerDrag(Marker arg0) {
+                // TODO Auto-generated method stub
+                Log.i("System out", "onMarkerDrag...");
+            }
+        });
 
 //Don't forget to Set draggable(true) to marker, if this not set marker does not drag.
 
-        }
+    }
     void removeCircleToMap(Marker marker)
     {
         if(groundOverlay1!=null)
-        groundOverlay1.remove();
+            groundOverlay1.remove();
     }
     void addCircleToMap(Marker marker)
     {
@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         int radiusM = 20;
         double latitude = marker.getPosition().latitude;
         double longitude = marker.getPosition().longitude;
-                LatLng latLng = new LatLng(latitude,longitude);
+        LatLng latLng = new LatLng(latitude,longitude);
 
         // draw circle
         int d = 500; // diameter
@@ -310,7 +310,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         BitmapDescriptor bmD = BitmapDescriptorFactory.fromBitmap(bm);
 
 // mapView is the GoogleMap
-         groundOverlay1 = mMap.addGroundOverlay(new GroundOverlayOptions().
+        groundOverlay1 = mMap.addGroundOverlay(new GroundOverlayOptions().
                 image(bmD).
                 position(latLng,radiusM*2,radiusM*2).
                 transparency(0.4f));
@@ -340,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         detail.upvotes = upvotes;
                         myref.setValue(detail);
                         marker.remove();
-                        updateMap();
+                      //  updateMap();
                     }
 
                     @Override
@@ -363,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         detail.upvotes = upvotes;
                         myref.setValue(detail);
                         marker.remove();
-                        updateMap();
+                       // updateMap();
                     }
 
                     @Override
@@ -378,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     void updateMap()
     {
         if(mMap!=null)
-        mMap.clear();
+            mMap.clear();
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("garbage");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -604,11 +604,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
         private void animateMarker(GoogleMap myMap, final Marker marker, final List<LatLng> directionPoint,
-                                          final boolean hideMarker) {
+                                   final boolean hideMarker) {
             final long start = SystemClock.uptimeMillis();
             if(flag) {
                 if(runnable2!=null)
-                handler2.removeCallbacks(runnable2);
+                    handler2.removeCallbacks(runnable2);
                 if (m2!=null)
                 {
                     m2.setVisible(false);
@@ -639,7 +639,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             else
             {
                 if (runnable1!=null)
-                handler1.removeCallbacks(runnable1);
+                    handler1.removeCallbacks(runnable1);
                 if (m1!=null)
                     m1.setVisible(false);
                 m2=marker;
@@ -712,9 +712,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         latlng.get(latlng.size()-1)+
                         "&key="+API_KEY;
             else
-            url="https://maps.googleapis.com/maps/api/directions/json?origin="+latlng.get(0)+"&destination="+
-                    latlng.get(latlng.size()-1)+
-                    "&waypoints=optimize:true"+waypoints+"&key="+API_KEY;
+                url="https://maps.googleapis.com/maps/api/directions/json?origin="+latlng.get(0)+"&destination="+
+                        latlng.get(latlng.size()-1)+
+                        "&waypoints=optimize:true"+waypoints+"&key="+API_KEY;
             Log.e("Key",API_KEY);
             return url;
         }

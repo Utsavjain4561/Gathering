@@ -12,13 +12,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name=".MainActivity">
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MainActivity"/>
+        <activity android:name=".DriverActivity"/>
+        <activity android:name=".AdminMainActivity"/>
+        <activity android:name=".signupAdmin"/>
+        <activity android:name=".signupEmployee"/>
+        <activity android:name=".StartupActivity"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAaePoPKF2O8agR5O8m_0E4E4_6Xudbkq4"/>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+    <android.support.v7.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:cardCornerRadius="4dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true"
+    app:cardBackgroundColor="#FFFFFF
+">
+
+    <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="2dp"
+    android:layout_margin="1dp"
+    android:orientation="vertical">
+
+    <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+    android:id="@+id/area_name"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="8dp"
+    android:text="Civil lines"
+    android:textColor="#000000"
+    android:textSize="22sp"
+    android:textStyle="bold|italic" />
+
+    <ImageView
+    android:id="@+id/delete_icon"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+
+    android:layout_alignParentRight="true"
+    android:layout_marginRight="5dp"
+    android:scaleType="centerCrop"
+    android:layout_centerInParent="true"
+    android:src="@drawable/places_ic_search" />
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+    android:id="@+id/unallocated_text"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Remaining slots: "
+    android:textStyle="bold"
+    android:textSize="18sp"
+    android:textColor="@color/colorPrimaryDark"/>
+
+    <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_toRightOf="@id/unallocated_text"
+    android:id="@+id/unallocated"
+    android:text=" 1"
+    android:textSize="18sp"
+    android:textColor="#fff"/>
+
+    <TextView
+    android:id="@+id/total"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="1"
+    android:textStyle="bold"
+    android:layout_alignParentRight="true"
+    android:textSize="18sp"
+    android:textColor="@color/colorPrimaryDark"/>
+
+    <TextView
+    android:id="@+id/separator"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="/"
+    android:textStyle="bold"
+    android:layout_toLeftOf="@id/total"
+    android:textSize="18sp"
+    android:textColor="@color/colorPrimaryDark"/>
+
+    <TextView
+    android:id="@+id/alotted"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="0"
+    android:layout_toLeftOf="@id/separator"
+    android:textSize="18sp"
+    android:textColor="#fff"/>
+    </RelativeLayout>
+    </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
