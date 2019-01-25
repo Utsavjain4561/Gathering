@@ -27,4 +27,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:2.2.2'
     implementation 'com.android.support:design:26.0.0-beta1'
     implementation 'com.google.android.gms:play-services-places:12.0.1'
+    implementation 'com.google.firebase-database:12.0.1'
+    implementation 'com.google.firebase-auth:12.0.1'
 }

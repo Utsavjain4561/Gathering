@@ -33,10 +33,13 @@ public class MainActivity extends AppCompatActivity {
                 mBuilder.setTitle("Add an event");
 
                 Button ok = (Button) mView.findViewById(R.id.ok);
-                EditText eventName = mView.findViewById(R.id.event_name);
+                final EditText eventName = mView.findViewById(R.id.event_name);
                 final EditText startDateText = mView.findViewById(R.id.startDate);
                 final EditText endDateText = mView.findViewById(R.id.endDate);
                 EditText locationText = mView.findViewById(R.id.location);
+
+                final String[] startDate = new String[1];
+                final String[] endDate = new String[1];
 
                 mBuilder.setView(mView);
                 final AlertDialog dialog = mBuilder.create();
@@ -56,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
                         String myFormat = "dd/MM/yy";
                         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
 
-                        startDateText.setText(sdf.format(myCalendar.getTime()));
+                        startDate[0] = sdf.format(myCalendar.getTime());
+                        startDateText.setText(startDate[0]);
                     }
                 };
 
@@ -85,7 +89,8 @@ public class MainActivity extends AppCompatActivity {
                         String myFormat = "dd/MM/yy";
                         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
 
-                        endDateText.setText(sdf.format(myCalendar1.getTime()));
+                        endDate[0] = sdf.format(myCalendar1.getTime());
+                        endDateText.setText(endDate[0]);
                     }
                 };
 
@@ -132,15 +137,20 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
+                final String location = "Allahabad";
 
 
                 ok.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
 
-                        // event added
+                        // new event added
+                        String eventname = String.valueOf(eventName.getText());
+                        Event newEvent = new Event(eventname, startDate[0], endDate[0], location);
 
+                        private DatabaseReference mDatabase;
+                        mDatabase = FirebaseDatabase.getInstance().getReference();
+                        mDatabase.child("Events").child(eventname).setValue(newEvent);
                         dialog.dismiss();
                     }
                 });

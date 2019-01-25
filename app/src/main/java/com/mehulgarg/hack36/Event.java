@@ -15,6 +15,29 @@ public class Event {
 
     public Event(String name, String startDate, String endDate, String location)
     {
+        this.name=name;
+        this.startDate=startDate;
+        this.endDate=endDate;
+        this.location=location;
+    }
 
+    public String getEventName()
+    {
+        return name;
+    }
+
+    public String getStartDate()
+    {
+        return startDate;
+    }
+
+    public String getEndDate()
+    {
+        return endDate;
+    }
+
+    public String getLocation()
+    {
+        return location;
     }
 }
