@@ -57,7 +57,7 @@ public class DriverActivity extends AppCompatActivity implements OnMapReadyCallb
     private boolean flag=true;
 
     private Marker m1=null,m2=null;
-    private final String API_KEY="AIzaSyAaePoPKF2O8agR5O8m_0E4E4_6Xudbkq4";
+    private final String API_KEY="AIzaSyAypnLWOzSglbt3bTtZ4Cia3vSjD3npHyk";
     private double meanUpvotes =0.0;
     private  String lat = "";
     private  String lng = "";

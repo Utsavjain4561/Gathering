@@ -19,8 +19,11 @@ import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.DragEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -86,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Runnable runnable1=null,runnable2=null;
     private android.widget.RelativeLayout.LayoutParams layoutParams;
     private GoogleMap mMap=null;
+    private Toolbar mToolbar;
+
     Marker m1=null,m2=null;
     ImageView img;
     String lat = "";
@@ -108,6 +113,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Guest");
+        }
+        mToolbar.setSubtitle("Test Subtitle");
+        mToolbar.inflateMenu(R.menu.main_menu);
+
+
         address = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
         img = findViewById(R.id.iv);
         img.setOnDragListener(this);
@@ -139,22 +153,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.i("rd", "An error occurred: " + status);
             }
         });
-        Intent intent =
-                null;
-        try {
-            intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY).build(this);
-        } catch (GooglePlayServicesRepairableException e) {
-            e.printStackTrace();
-        } catch (GooglePlayServicesNotAvailableException e) {
-            e.printStackTrace();
-        }
-        startActivityForResult(intent, PLACE_PICKER_REQUEST);
 
 
 
     }
 
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+
+        return true;
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.events:
+                Toast.makeText(MainActivity.this,"Events clicked",Toast.LENGTH_SHORT).show();
+                Intent eventsIntent  = new Intent(MainActivity.this,AdminMainActivity.class);
+                eventsIntent.putExtra("flag",1);
+                startActivity(eventsIntent);
+                break;
+        }
+        return true;
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
