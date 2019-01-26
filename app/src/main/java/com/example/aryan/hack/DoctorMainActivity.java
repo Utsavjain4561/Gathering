@@ -66,7 +66,7 @@ public class DoctorMainActivity extends AppCompatActivity implements OnMapReadyC
     private  MapDetails mapDetails ;
 
     private Marker m1=null,m2=null;
-    private final String API_KEY="AIzaSyDqowUSwGzB2sTv-9DocdhDU3ylol0s9_U";
+    private final String API_KEY="AIzaSyDgxHo_XoHzO02UrBb0milqb4Y705zTN0w";
     private double meanUpvotes =0.0;
     private  String lat = "";
     private  String lng = "";
@@ -168,8 +168,7 @@ public class DoctorMainActivity extends AppCompatActivity implements OnMapReadyC
 
             addPolylineToMap(myMapDetails.mCoordinates,myMapDetails.mPolyline);
         }
-        else
-            updateMap();
+         //   updateMap();
     }
     Bitmap writeondrawable(int id, String text)
     {
@@ -272,7 +271,7 @@ public class DoctorMainActivity extends AppCompatActivity implements OnMapReadyC
     }
     private void updateMap(){
 
-
+        meanUpvotes = 0;
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("gatherings").child("kumbhmela").child("garbage");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -280,7 +279,6 @@ public class DoctorMainActivity extends AppCompatActivity implements OnMapReadyC
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot post : dataSnapshot.getChildren())
                 {
-                    meanUpvotes = 0;
                     int index = post.getKey().indexOf("n");
                     lat = post.getKey().substring(0,index);
                     lng = post.getKey().substring(index+1);

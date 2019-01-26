@@ -27,7 +27,7 @@
         <activity android:name=".ValidationByAdmin"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDqowUSwGzB2sTv-9DocdhDU3ylol0s9_U"/>
+            android:value="AIzaSyDgxHo_XoHzO02UrBb0milqb4Y705zTN0w"/>
     </application>
 
 </manifest>
