@@ -16,7 +16,7 @@
     </string>
     <string-array name="choices">
         <item>admin</item>
-        <item>doctor</item>
+        <item>medicalHelp</item>
         <item>cleaner</item>
     </string-array>
 </resources>

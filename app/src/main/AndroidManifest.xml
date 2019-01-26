@@ -14,22 +14,27 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CleanerMainActivity">
-
-        </activity>
+        <activity android:name=".CleanerMainActivity"></activity>
         <activity android:name=".SignUp" />
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".AdminMainActivity" />
         <activity android:name=".DoctorMainActivity" />
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".MainActivity" />
+        <activity android:name=".ValidationByAdmin"></activity>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDqowUSwGzB2sTv-9DocdhDU3ylol0s9_U">
+
+        </meta-data>
+
     </application>
 
 </manifest>

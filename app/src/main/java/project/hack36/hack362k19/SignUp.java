@@ -83,6 +83,8 @@ public class SignUp extends AppCompatActivity implements AdapterView.OnItemSelec
 
     }
 
+
+
     void write_data(){
 
         final String name = name_field.getText().toString();
@@ -122,10 +124,11 @@ public class SignUp extends AppCompatActivity implements AdapterView.OnItemSelec
 
         //add request for validation by admin
 
-        databaseRef2 = FirebaseDatabase.getInstance().getReference(key1);
+        databaseRef2 = FirebaseDatabase.getInstance().getReference("gatherings").child(key1);
         validationRequest request = new validationRequest(name, num, role);
         String keyreq = databaseRef2.child(city).push().getKey();
         databaseRef2.child("requests").child(keyreq).setValue(request);
+        RequestProcessStatus.setProcessed(false);
 
         //authentication by phone
 
@@ -181,7 +184,6 @@ public class SignUp extends AppCompatActivity implements AdapterView.OnItemSelec
         startActivity(intent);
         finish();
     }
-
 
     void go_to_respective_activity(){
         if(role.equals("cleaner")){

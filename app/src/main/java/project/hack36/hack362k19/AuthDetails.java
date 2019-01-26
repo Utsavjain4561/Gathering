@@ -9,6 +9,10 @@ public class AuthDetails {
     private String name;
     private String password;
 
+    public AuthDetails(){
+
+    }
+
     public AuthDetails(String name, String password) {
         this.name = name;
         this.password = password;

@@ -37,12 +37,12 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     private Button login, guestLogin;
     private TextView signUp;
     private Spinner spinner;
-    private TextInputEditText inputPhone, inputPassword;
+    private TextInputEditText inputPhone, inputPassword, inputPlace;
     private Button forgot_password;
     private FirebaseAuth auth;
     private ProgressBar progressBar;
     private DatabaseReference databaseRef, databaseRef2;
-    private String phone, password, tmp1, tmp2, tmp3, role;
+    private String phone, password, tmp1, tmp3, role, place;
 
 
     @Override
@@ -55,19 +55,12 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
             SessionManager sm = new SessionManager(getApplicationContext());
             HashMap<String, String> details = sm.getUserDetails();
             tmp1 = details.get("id");
-            tmp2 = details.get("role");
+            role = details.get("role");
             tmp3 = details.get("place");
-            if (!TextUtils.isEmpty(tmp1) && !TextUtils.isEmpty(tmp2)) {
+            if (!TextUtils.isEmpty(tmp1) && !TextUtils.isEmpty(role)) {
                 Toast.makeText(this, "User " + tmp1 + " logged in", Toast.LENGTH_SHORT).show();
 
-                if (tmp2.equals("admin")) {
-                    goto_Admin();
-                } else if(tmp2.equals("cleaner")){
-                    goto_Cleaner();
-                }
-                else{
-                    goto_Doctor();
-                }
+                go_to_respective_activity();
             }
         }
 
@@ -76,6 +69,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
         login = findViewById(R.id.login_press);
         guestLogin = findViewById(R.id.guest_login_press);
         signUp = findViewById(R.id.goSign);
+        inputPlace = findViewById(R.id.place);
         inputPhone = findViewById(R.id.phone);
         inputPassword = findViewById(R.id.password);
         forgot_password = findViewById(R.id.btn_reset_password);
@@ -114,7 +108,9 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
             @Override
             public void onClick(View v) {
                 phone = inputPhone.getText().toString();
+                Toast.makeText(LoginActivity.this,phone,Toast.LENGTH_SHORT).show();
                 password = inputPassword.getText().toString();
+                place = inputPlace.getText().toString().toLowerCase().replaceAll(" ","");
 
                 if (TextUtils.isEmpty(phone)) {
                     Snackbar snackbar = Snackbar.make(v, "Enter Phone!", Snackbar.LENGTH_LONG);
@@ -132,32 +128,48 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
 
                 //authenticate user
-                databaseRef = FirebaseDatabase.getInstance().getReference("gathering");
+                databaseRef = FirebaseDatabase.getInstance().getReference("gatherings");
                 databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        String primKey = dataSnapshot.getKey();
-                        databaseRef2 = FirebaseDatabase.getInstance().getReference(primKey);
-                        databaseRef2.child(role).child(phone).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if(dataSnapshot.exists()){
-                                    AuthDetails authDetails = dataSnapshot.getValue(AuthDetails.class);
-                                    if(authDetails.getPassword().equals(password)){
+                        for(DataSnapshot snapshot:dataSnapshot.getChildren()){
 
-                                        Toast.makeText(getApplicationContext(), "Logged in!!", Toast.LENGTH_SHORT).show();
-                                        go_to_respective_activity();
+                            String primKey = snapshot.getKey();
+                            Toast.makeText(LoginActivity.this,primKey,Toast.LENGTH_SHORT).show();
+                            if(primKey.equals(place)){
+                                databaseRef2 = FirebaseDatabase.getInstance().getReference("gatherings");
+                                databaseRef2.child(primKey).child(role).child(phone).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        if(dataSnapshot.exists()){
+                                            AuthDetails authDetails = dataSnapshot.getValue(AuthDetails.class);
+                                            if(authDetails.getPassword().equals(password)){
 
+                                                Toast.makeText(getApplicationContext(), "Logged in!!", Toast.LENGTH_SHORT).show();
+                                                go_to_respective_activity();
+
+                                            }
+                                            else{
+                                                Toast.makeText(getApplicationContext(), "password not matched", Toast.LENGTH_SHORT).show();
+                                            }
+
+                                        }
+                                        else{
+                                            Toast.makeText(getApplicationContext(), "not exist", Toast.LENGTH_SHORT).show();
+
+                                        }
                                     }
 
-                                }
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
                             }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
 
-                            }
-                        });
+                        }
+
 
                     }
 
@@ -206,28 +218,12 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         role = adapterView.getItemAtPosition(i).toString();
+        Toast.makeText(getApplicationContext(),role,Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
 
-    }
-    void goto_Admin() {
-        Intent intent = new Intent(LoginActivity.this, AdminMainActivity.class);
-        startActivity(intent);
-        finish();
-    }
-
-    void goto_Cleaner() {
-        Intent intent = new Intent(LoginActivity.this, CleanerMainActivity.class);
-        startActivity(intent);
-        finish();
-    }
-
-    void goto_Doctor(){
-        Intent intent = new Intent(LoginActivity.this, DoctorMainActivity.class);
-        startActivity(intent);
-        finish();
     }
 
     String RadioButtonSelect(int selectId) {
