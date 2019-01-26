@@ -25,6 +25,7 @@
         <activity android:name=".DoctorMainActivity"/>
         <activity android:name=".SignUp"/>
         <activity android:name=".ValidationByAdmin"/>
+        <activity android:name=".AddItem"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDgxHo_XoHzO02UrBb0milqb4Y705zTN0w"/>

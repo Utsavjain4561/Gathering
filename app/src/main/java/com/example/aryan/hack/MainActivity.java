@@ -182,7 +182,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap=googleMap;
-        mMap.getUiSettings().setScrollGesturesEnabled(false);
         garbage = false;
         doctor = false;
         //  mMap.addMarker(new MarkerOptions().position(new LatLng(11,11)).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A"))));
