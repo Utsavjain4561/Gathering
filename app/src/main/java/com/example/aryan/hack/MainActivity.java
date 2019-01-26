@@ -1,6 +1,6 @@
 package com.example.aryan.hack;
 
-import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,6 +15,7 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -78,9 +80,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import static java.lang.Thread.sleep;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,GoogleMap.OnInfoWindowClickListener, View.OnDragListener {
 
     boolean flag = true;
+    boolean garbage;
+    boolean doctor;
     Handler handler1 = new Handler();
     Handler handler2 = new Handler();
     Runnable runnable1=null,runnable2=null;
@@ -90,6 +96,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ImageView img;
     String lat = "";
     String lng = "";
+    String ans;
+    String doctor_description;
     String address="";
     int PLACE_PICKER_REQUEST = 1;
     private static final String IMAGEVIEW_TAG = "icon bitmap";
@@ -123,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-      //  updateMap();
+        updateMap();
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -139,16 +147,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.i("rd", "An error occurred: " + status);
             }
         });
-        Intent intent =
-                null;
-        try {
-            intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY).build(this);
-        } catch (GooglePlayServicesRepairableException e) {
-            e.printStackTrace();
-        } catch (GooglePlayServicesNotAvailableException e) {
-            e.printStackTrace();
-        }
-        startActivityForResult(intent, PLACE_PICKER_REQUEST);
+//        Intent intent =
+//                null;
+//        try {
+//            intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY).build(this);
+//        } catch (GooglePlayServicesRepairableException e) {
+//            e.printStackTrace();
+//        } catch (GooglePlayServicesNotAvailableException e) {
+//            e.printStackTrace();
+//        }
+//        startActivityForResult(intent, PLACE_PICKER_REQUEST);
 
 
 
@@ -174,79 +182,113 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap=googleMap;
+        mMap.getUiSettings().setScrollGesturesEnabled(false);
+        garbage = false;
+        doctor = false;
         //  mMap.addMarker(new MarkerOptions().position(new LatLng(11,11)).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.marker,"A"))));
         mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
         mMap.setOnInfoWindowClickListener(this);
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(final Marker marker) {
+                final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+                progressDialog.setTitle("fetching data");
+                progressDialog.show();
+                garbage = false;
+                doctor = false;
                 marker.setDraggable(false);
                 local_lat = marker.getPosition().latitude+"";
                 local_lng = marker.getPosition().longitude+"";
                 local_lat=local_lat.replace('.','o');
                 local_lng= local_lng.replace('.','o');
                 local_key = local_lat + 'n' + local_lng;
-                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                Toast.makeText(MainActivity.this,local_key,Toast.LENGTH_LONG).show();
+                final FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
                 // Toast.makeText(MainActivity.this,local_key,Toast.LENGTH_LONG).show();
-                final DatabaseReference myref = firebaseDatabase.getReference("garbage").child(local_key);
+                final DatabaseReference myref = firebaseDatabase.getReference("gatherings").child("kumbhmela").child("garbage").child(local_key);
                 myref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (!dataSnapshot.exists())
                         {
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green,"A")));
-                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            garbage = true;
+                            //Toast.makeText(MainActivity.this,"garbage "+garbage,Toast.LENGTH_LONG).show();
 
-                            final EditText input = new EditText(MainActivity.this);
-                            input.setHint("Description");
-                            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                                    LinearLayout.LayoutParams.MATCH_PARENT,
-                                    LinearLayout.LayoutParams.MATCH_PARENT);
-                            input.setLayoutParams(lp);
-                            builder.setView(input);
-                            builder.setTitle("Description").setNegativeButton("Submit", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-
-                                    myref.addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                            if(dataSnapshot.exists()) {
-
-                                            }
-                                            else{
-                                                local_details = new Detail(input.getText().toString(),0,address);
-                                                Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                                                try {
-                                                    List<Address> addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude,1);
-                                                    String add = addresses.get(0).getLocality();
-                                                    marker.setTitle(add);
-                                                } catch (IOException e) {
-                                                    marker.setTitle("Details");
-                                                    Log.e("hey",e.toString());
-                                                    e.printStackTrace();
-                                                }
-                                                marker.setSnippet("Description: "+input.getText()+"\nUpvotes: "+0);
-                                                marker.showInfoWindow();
-                                                myref.setValue(local_details);
+                            if (garbage == true)
+                            {
+                                final DatabaseReference ref = firebaseDatabase.getReference("gatherings").child("kumbhmela").child("doctor").child(local_key);
+                                ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        if (!dataSnapshot.exists())
+                                        {
+                                            doctor = true;
+                                            //Toast.makeText(MainActivity.this,"doctor "+doctor,Toast.LENGTH_LONG).show();
+                                            if (garbage == true && doctor == true)
+                                            {
+                                                progressDialog.dismiss();
+                                                final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                                doctor_description = "noonechosesthis";
+                                                final EditText input = new EditText(MainActivity.this);
+                                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                                        LinearLayout.LayoutParams.MATCH_PARENT,
+                                                        LinearLayout.LayoutParams.MATCH_PARENT);
+                                                input.setLayoutParams(lp);
+                                                builder.setView(input);
+                                                builder.setTitle("Choose destination reason").setNegativeButton("doctor", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        doctor_description = input.getText().toString();
+                                                        FirebaseDatabase db = FirebaseDatabase.getInstance();
+                                                        DatabaseReference doctor_ref = db.getReference("gatherings").child("kumbhmela").child("doctor").child(local_key);
+                                                        doctor_ref.setValue(new Detail(doctor_description,0,address));
+                                                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.doctor_green,"A")));
+                                                        marker.setTitle("area");
+                                                        marker.setSnippet("Description: "+doctor_description+"\n"+"Upvotes: "+"0");
+                                                        marker.showInfoWindow();
+                                                    }
+                                                }).setPositiveButton("garbage", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        FirebaseDatabase db = FirebaseDatabase.getInstance();
+                                                        DatabaseReference garbage_ref = db.getReference("gatherings").child("kumbhmela").child("garbage").child(local_key);
+                                                        doctor_description = input.getText().toString();
+                                                        garbage_ref.setValue(new Detail(doctor_description,0,address));
+                                                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green,"A")));
+                                                        marker.setTitle("area");
+                                                        marker.setSnippet("Description: "+doctor_description+"\n"+"Upvotes: "+"0");
+                                                        marker.showInfoWindow();
+                                                    }
+                                                }).show();
                                             }
                                         }
-
-                                        @Override
-                                        public void onCancelled(DatabaseError databaseError) {
-
+                                        else
+                                        {
+                                            //Toast.makeText(MainActivity.this,"exists2",Toast.LENGTH_LONG).show();
+                                            if (dataSnapshot.child("address").getValue().equals(address))
+                                                marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.doctor_green,"A")));
+                                            else
+                                                marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.doctor_black,"A")));
                                         }
-                                    });
-                                }
-                            }).show();
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                            }
                         }
                         else
                         {
+                            //Toast.makeText(MainActivity.this,"exists",Toast.LENGTH_LONG).show();
                             if (dataSnapshot.child("address").getValue().equals(address))
                                 marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green,"A")));
                             else
                                 marker.setIcon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_black,"A")));
                         }
+                        progressDialog.dismiss();
                     }
 
                     @Override
@@ -255,6 +297,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
 
+               // Log.e("values",garbage+" "+doctor);
                 marker.showInfoWindow();
                 return false;
             }
@@ -330,17 +373,39 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
-                final DatabaseReference myref = database.getReference("garbage").child(ke);
+                final DatabaseReference myref = database.getReference("gatherings").child("kumbhmela").child("garbage").child(ke);
                 myref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Detail detail = dataSnapshot.getValue(Detail.class);
-                        int upvotes = detail.upvotes;
-                        upvotes++;
-                        detail.upvotes = upvotes;
-                        myref.setValue(detail);
-                        marker.remove();
-                      //  updateMap();
+                        if (dataSnapshot.exists()) {
+                            Detail detail = dataSnapshot.getValue(Detail.class);
+                            int upvotes = detail.upvotes;
+                            upvotes++;
+                            detail.upvotes = upvotes;
+                            myref.setValue(detail);
+                            marker.remove();
+                            updateMap();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+                final DatabaseReference myref2 = database.getReference("gatherings").child("kumbhmela").child("doctor").child(ke);
+                myref2.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            Detail detail = dataSnapshot.getValue(Detail.class);
+                            int upvotes = detail.upvotes;
+                            upvotes++;
+                            detail.upvotes = upvotes;
+                            myref2.setValue(detail);
+                            marker.remove();
+                            updateMap();
+                        }
                     }
 
                     @Override
@@ -353,17 +418,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
-                final DatabaseReference myref = database.getReference("garbage").child(ke);
+                final DatabaseReference myref = database.getReference("gatherings").child("kumbhmela").child("garbage").child(ke);
                 myref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Detail detail = dataSnapshot.getValue(Detail.class);
-                        int upvotes = detail.upvotes;
-                        upvotes--;
-                        detail.upvotes = upvotes;
-                        myref.setValue(detail);
-                        marker.remove();
-                       // updateMap();
+                        if (dataSnapshot.exists()) {
+                            Detail detail = dataSnapshot.getValue(Detail.class);
+                            int upvotes = detail.upvotes;
+                            upvotes--;
+                            detail.upvotes = upvotes;
+                            myref.setValue(detail);
+                            marker.remove();
+                            updateMap();
+                        }
                     }
 
                     @Override
@@ -371,52 +438,134 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     }
                 });
+                final DatabaseReference myref2 = database.getReference("gatherings").child("kumbhmela").child("doctor").child(ke);
+                myref2.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            Detail detail = dataSnapshot.getValue(Detail.class);
+                            int upvotes = detail.upvotes;
+                            upvotes--;
+                            detail.upvotes = upvotes;
+                            myref2.setValue(detail);
+                            marker.remove();
+                            updateMap();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
             }
         }).show();
         marker.showInfoWindow();
     }
     void updateMap()
     {
+
+           // mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(25.4274,81.8846),10));
+        ProgressDialog pd = new ProgressDialog(MainActivity.this);
+        pd.setTitle("fetching data");
+        pd.show();
         if(mMap!=null)
             mMap.clear();
+        meanUpvotes = 0;
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        DatabaseReference databaseReference = firebaseDatabase.getReference("garbage");
+        DatabaseReference databaseReference = firebaseDatabase.getReference("gatherings").child("kumbhmela").child("garbage");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot post : dataSnapshot.getChildren())
-                {
-                    meanUpvotes = 0;
-                    int index = post.getKey().indexOf("n");
-                    lat = post.getKey().substring(0,index);
-                    lng = post.getKey().substring(index+1);
-                    lat = lat.replace('o','.');
-                    lng = lng.replace('o','.');
-                    String latlngString = String.valueOf(lat)+"%2C"+String.valueOf(lng);
-                    //latlng.add(latlngString);
-                    Detail placeDetail = post.getValue(Detail.class);
-                    Log.e("Place upvotes",placeDetail.upvotes+"");
-                    extraDetails.add(new ExtraDetail(placeDetail.upvotes,latlngString,new Date()));
-                    meanUpvotes+=placeDetail.upvotes;
-                    Log.e("Sum ",meanUpvotes+"");
-                    Marker marker;
-                    if (post.getValue(Detail.class).address.equals(address)) {
-                        marker = mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green,"A"))).title("Details").snippet("Description: " + post.child("description").getValue() + "\n" + "Upvotes: " + post.child("upvotes").getValue()));
-                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                        try {
-                            List<Address> addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude,1);
-                            Address obj = addresses.get(0);
-                            String add = obj.getLocality();
-                            Toast.makeText(MainActivity.this,add,Toast.LENGTH_LONG).show();
-                            marker.setTitle(add);
-                        } catch (IOException e) {
-                            marker.setTitle("Details");
-                            Log.e("hey",e.toString());
-                            e.printStackTrace();
-                        }
-                    }else
-                        marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_black,"A"))).position(new LatLng(Double.parseDouble(lat),Double.parseDouble(lng))).snippet("Description: " + post.child("description").getValue()+"\n"+"Upvotes: " + post.child("upvotes").getValue()).title("Title"));
-                    marker.showInfoWindow();
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot post : dataSnapshot.getChildren()) {
+
+                        int index = post.getKey().indexOf("n");
+                        lat = post.getKey().substring(0, index);
+                        lng = post.getKey().substring(index + 1);
+                        lat = lat.replace('o', '.');
+                        lng = lng.replace('o', '.');
+                        String latlngString = String.valueOf(lat) + "%2C" + String.valueOf(lng);
+                        //latlng.add(latlngString);
+                        Detail placeDetail = post.getValue(Detail.class);
+                        Log.e("Place upvotes", placeDetail.upvotes + "");
+                        extraDetails.add(new ExtraDetail(placeDetail.upvotes, latlngString, new Date()));
+                        meanUpvotes += placeDetail.upvotes;
+                        Log.e("Sum ", meanUpvotes + "");
+                        Marker marker;
+                        if (post.getValue(Detail.class).address.equals(address)) {
+                            marker = mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green, "A"))).title("Details").snippet("Description: " + post.child("description").getValue() + "\n" + "Upvotes: " + post.child("upvotes").getValue()));
+                            Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                            try {
+                                List<Address> addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude, 1);
+                                Address obj = addresses.get(0);
+                                String add = obj.getLocality();
+                                // Toast.makeText(MainActivity.this,add,Toast.LENGTH_LONG).show();
+                                marker.setTitle(add);
+                            } catch (IOException e) {
+                                marker.setTitle("Details");
+                                Log.e("hey", e.toString());
+                                e.printStackTrace();
+                            }
+                        } else
+                            marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_black, "A"))).position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))).snippet("Description: " + post.child("description").getValue() + "\n" + "Upvotes: " + post.child("upvotes").getValue()).title("Title"));
+                        marker.showInfoWindow();
+                    }
+                }
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(25.4274,81.8846),15));
+
+//                sortLocations();
+//                new Directions().execute();
+            }
+
+
+
+
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        databaseReference = firebaseDatabase.getReference("gatherings").child("kumbhmela").child("doctor");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot post : dataSnapshot.getChildren()) {
+                        meanUpvotes = 0;
+                        int index = post.getKey().indexOf("n");
+                        lat = post.getKey().substring(0, index);
+                        lng = post.getKey().substring(index + 1);
+                        lat = lat.replace('o', '.');
+                        lng = lng.replace('o', '.');
+                        String latlngString = String.valueOf(lat) + "%2C" + String.valueOf(lng);
+                        //latlng.add(latlngString);
+                        Detail placeDetail = post.getValue(Detail.class);
+                        Log.e("Place upvotes", placeDetail.upvotes + "");
+                        extraDetails.add(new ExtraDetail(placeDetail.upvotes, latlngString, new Date()));
+                        meanUpvotes += placeDetail.upvotes;
+                        Log.e("Sum ", meanUpvotes + "");
+                        Marker marker;
+                        if (post.getValue(Detail.class).address.equals(address)) {
+                            marker = mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.doctor_green, "A"))).title("Details").snippet("Description: " + post.child("description").getValue() + "\n" + "Upvotes: " + post.child("upvotes").getValue()));
+                            Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                            try {
+                                List<Address> addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude, 1);
+                                Address obj = addresses.get(0);
+                                String add = obj.getLocality();
+                                Toast.makeText(MainActivity.this, add, Toast.LENGTH_LONG).show();
+                                marker.setTitle(add);
+                            } catch (IOException e) {
+                                marker.setTitle("Details");
+                                Log.e("hey", e.toString());
+                                e.printStackTrace();
+                            }
+                        } else
+                            marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.doctor_black, "A"))).position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))).snippet("Description: " + post.child("description").getValue() + "\n" + "Upvotes: " + post.child("upvotes").getValue()).title("Title"));
+                        marker.showInfoWindow();
+                    }
                 }
 //                sortLocations();
 //                new Directions().execute();
@@ -431,6 +580,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         });
+        pd.dismiss();
     }
 
     @Override

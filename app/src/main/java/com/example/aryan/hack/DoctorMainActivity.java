@@ -4,14 +4,20 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -50,14 +56,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
-public class DriverActivity extends AppCompatActivity implements OnMapReadyCallback{
-    private GoogleMap mMap=null;
+public class DoctorMainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    GoogleMap map = null;
+    String address;
     private boolean flag=true;
+    private  MapDetails mapDetails ;
 
     private Marker m1=null,m2=null;
-    private final String API_KEY="AIzaSyAaePoPKF2O8agR5O8m_0E4E4_6Xudbkq4";
+    private final String API_KEY="AIzaSyDqowUSwGzB2sTv-9DocdhDU3ylol0s9_U";
     private double meanUpvotes =0.0;
     private  String lat = "";
     private  String lng = "";
@@ -73,40 +82,108 @@ public class DriverActivity extends AppCompatActivity implements OnMapReadyCallb
     Runnable runnable1=null,runnable2=null;
     Handler handler1 = new Handler();
     Handler handler2 = new Handler();
-    SwipeRefreshLayout swipeRefreshLayout;
-    private  MapDetails mapDetails ;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_driver);
+        setContentView(R.layout.activity_doctor_main);
+        address = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
+        final SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map2);
+        mapFragment.getMapAsync(this);
+        String num = getIntent().getStringExtra("number");
+        Toast.makeText(DoctorMainActivity.this,num,Toast.LENGTH_LONG).show();
+        final FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        final DatabaseReference myref = firebaseDatabase.getReference("gatherings").child("kumbhmela").child("requests").child(num);
+        myref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.child("role").getValue().equals("medicalHelp")) {
+                    mapFragment.getView().setVisibility(View.INVISIBLE);
+                } else
+                {
+                    DatabaseReference newref = firebaseDatabase.getReference("gatherings").child("kumbhmela").child("doctor");
+                    newref.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists())
+                            {
+                                for (DataSnapshot post: dataSnapshot.getChildren())
+                                {
+                                    int index = post.getKey().indexOf("n");
+                                    lat = post.getKey().substring(0, index);
+                                    lng = post.getKey().substring(index + 1);
+                                    lat = lat.replace('o', '.');
+                                    lng = lng.replace('o', '.');
+                                    String latlngString = String.valueOf(lat) + "%2C" + String.valueOf(lng);
+                                    Marker marker;
+                                    marker = map.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))).icon(BitmapDescriptorFactory.fromBitmap(writeondrawable(R.mipmap.delete_green, "A"))).title("Details").snippet("Description: " + post.child("description").getValue() + "\n" + "Upvotes: " + post.child("upvotes").getValue()));
+                                    Geocoder geocoder = new Geocoder(DoctorMainActivity.this, Locale.getDefault());
+                                    try {
+                                        List<Address> addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude, 1);
+                                        Address obj = addresses.get(0);
+                                        String add = obj.getLocality();
+                                        // Toast.makeText(MainActivity.this,add,Toast.LENGTH_LONG).show();
+                                        marker.setTitle(add);
+                                    } catch (IOException e) {
+                                        marker.setTitle("Details");
+                                        Log.e("hey", e.toString());
+                                        e.printStackTrace();
+                                    }
+                                    marker.showInfoWindow();
+                                }
+                            }
+                        }
 
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-        SupportMapFragment mapFragment1 = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.smap);
-        mapFragment1.getMapAsync(this);
-
-
-
-
-
-
-            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    Log.e("refershing", "Refresh");
-                   // updateMap();
-                    // while (!updateProgress){}
-                    // swipeRefreshLayout.setRefreshing(false);
-                    // updateProgress = false;
+                        }
+                    });
                 }
-            });
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        address = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        map=googleMap;
+        SharedPreferences sharedPreferences = getSharedPreferences("SHARED_PREF", Context.MODE_PRIVATE);
+
+        Gson gson =new Gson();
+        String mapDet = sharedPreferences.getString("mapdetails","");
+        MapDetails myMapDetails = gson.fromJson(mapDet,MapDetails.class);
+        if (myMapDetails!=null) {
+
+
+            addPolylineToMap(myMapDetails.mCoordinates,myMapDetails.mPolyline);
         }
-
+        else
+            updateMap();
+    }
+    Bitmap writeondrawable(int id, String text)
+    {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),id).copy(Bitmap.Config.ARGB_8888,true);
+        Paint paint = new Paint();
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(60);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawText(text,bitmap.getWidth()-50,bitmap.getHeight(),paint);
+        return bitmap;
+    }
     private  void animateMarker(GoogleMap myMap, final Marker marker, final List<LatLng> directionPoint,
-                              final boolean hideMarker) {
+                                final boolean hideMarker) {
         final long start = SystemClock.uptimeMillis();
         if(flag) {
             if(runnable2!=null)
@@ -169,16 +246,16 @@ public class DriverActivity extends AppCompatActivity implements OnMapReadyCallb
         }
     }
 
-    private void addPolylineToMap(ArrayList<LatLng> coordinates,ArrayList<LatLng> polyline){
-        if(mMap!=null){
-            mMap.clear();
+    private void addPolylineToMap(ArrayList<LatLng> coordinates, ArrayList<LatLng> polyline){
+        if(map!=null){
+            map.clear();
         }        Bitmap markerBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.dustbin).copy(Bitmap.Config.ARGB_8888, true);
 
         if (coordinates!=null) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinates.get(0),10));
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinates.get(0),10));
 
             for (int i = 0; i < coordinates.size(); i++) {
-                mMap.addMarker(new MarkerOptions()
+                map.addMarker(new MarkerOptions()
                         .position(coordinates.get(i))
                         .icon(BitmapDescriptorFactory.fromBitmap(markerBitmap)));
             }
@@ -187,79 +264,59 @@ public class DriverActivity extends AppCompatActivity implements OnMapReadyCallb
         polylineOptions.pattern(PATTERN_POLYGON_ALPHA);
         polylineOptions.startCap(new RoundCap());
 
-        mMap.addPolyline(polylineOptions.addAll(polyline).width(10).color(Color.BLUE));
+        map.addPolyline(polylineOptions.addAll(polyline).width(10).color(Color.BLUE));
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.bus).copy(Bitmap.Config.ARGB_8888,true);
 
-        Marker marker = mMap.addMarker(new MarkerOptions().position(polyline.get(0)).icon(BitmapDescriptorFactory.fromBitmap(bitmap)).flat(true));
-        animateMarker(mMap, marker, polyline, false);
+        Marker marker = map.addMarker(new MarkerOptions().position(polyline.get(0)).icon(BitmapDescriptorFactory.fromBitmap(bitmap)).flat(true));
+        animateMarker(map, marker, polyline, false);
     }
-
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        SharedPreferences sharedPreferences = getSharedPreferences("SHARED_PREF", Context.MODE_PRIVATE);
-
-        Gson gson =new Gson();
-        String mapDet = sharedPreferences.getString("mapdetails","");
-        MapDetails myMapDetails = gson.fromJson(mapDet,MapDetails.class);
-        if (myMapDetails!=null) {
-
-
-            addPolylineToMap(myMapDetails.mCoordinates,myMapDetails.mPolyline);
-        }
-        else{
-           // updateMap();
-        }
-    }
-
     private void updateMap(){
 
 
-            FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-            DatabaseReference databaseReference = firebaseDatabase.getReference("garbage");
-            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    for (DataSnapshot post : dataSnapshot.getChildren())
-                    {
-                        meanUpvotes = 0;
-                        int index = post.getKey().indexOf("n");
-                        lat = post.getKey().substring(0,index);
-                        lng = post.getKey().substring(index+1);
-                        lat = lat.replace('o','.');
-                        lng = lng.replace('o','.');
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference databaseReference = firebaseDatabase.getReference("gatherings").child("kumbhmela").child("garbage");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot post : dataSnapshot.getChildren())
+                {
+                    meanUpvotes = 0;
+                    int index = post.getKey().indexOf("n");
+                    lat = post.getKey().substring(0,index);
+                    lng = post.getKey().substring(index+1);
+                    lat = lat.replace('o','.');
+                    lng = lng.replace('o','.');
 
-                        coordinates.add(new LatLng(Double.parseDouble(lat),Double.parseDouble(lng)));
-
-
-                        String latlngString = lat+"%2C"+lng;
-
-                        Detail placeDetail = post.getValue(Detail.class);
-                        Log.e("Place upvotes",placeDetail.upvotes+"");
-
-                        extraDetails.add(new ExtraDetail(placeDetail.upvotes,latlngString,new Date()));
-                        meanUpvotes+=placeDetail.upvotes;
-                        Log.e("Sum ",meanUpvotes+"");
-
-                    }
+                    coordinates.add(new LatLng(Double.parseDouble(lat),Double.parseDouble(lng)));
 
 
-                    sortLocations();
-                    new Directions().execute();
-                }
+                    String latlngString = lat+"%2C"+lng;
 
+                    Detail placeDetail = post.getValue(Detail.class);
+                    Log.e("Place upvotes",placeDetail.upvotes+"");
 
-
-
-
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+                    extraDetails.add(new ExtraDetail(placeDetail.upvotes,latlngString,new Date()));
+                    meanUpvotes+=placeDetail.upvotes;
+                    Log.e("Sum ",meanUpvotes+"");
 
                 }
-            });
-        }
+
+
+                sortLocations();
+                new Directions().execute();
+            }
+
+
+
+
+
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
     class SortComparator implements Comparator<ExtraDetail> {
         private int maxUpvotes;
         private int minUpvotes;
@@ -380,7 +437,7 @@ public class DriverActivity extends AppCompatActivity implements OnMapReadyCallb
                     lines.add(p);
                 }
                 Log.e("polyline ",lines+"");
-               mapDetails = new MapDetails(coordinates,lines);
+                mapDetails = new MapDetails(coordinates,lines);
                 SharedPreferences sharedPreferences = getSharedPreferences("SHARED_PREF", Context.MODE_PRIVATE);
 
                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -401,11 +458,10 @@ public class DriverActivity extends AppCompatActivity implements OnMapReadyCallb
             String lowPriority = s.substring(s.indexOf('#')+1);
             addStringToPolyline(highPriority);
             addStringToPolyline(lowPriority);
-            addPolylineToMap(coordinates,lines
-            );
+            addPolylineToMap(coordinates,lines);
 
             //updateProgress = true;
-            swipeRefreshLayout.setRefreshing(false);
+            //swipeRefreshLayout.setRefreshing(false);
 
         }
         private List<LatLng> decodePolyline(String encoded) {
@@ -453,14 +509,11 @@ public class DriverActivity extends AppCompatActivity implements OnMapReadyCallb
                 url = "https://maps.googleapis.com/maps/api/directions/json?origin="+latlng.get(0)+"&destination="+
                         latlng.get(latlng.size()-1)+"&key="+API_KEY;
             else
-             url="https://maps.googleapis.com/maps/api/directions/json?origin="+latlng.get(0)+"&destination="+
-                    latlng.get(latlng.size()-1)+
-                    "&waypoints=optimize:true"+waypoints+"&key="+API_KEY;
+                url="https://maps.googleapis.com/maps/api/directions/json?origin="+latlng.get(0)+"&destination="+
+                        latlng.get(latlng.size()-1)+
+                        "&waypoints=optimize:true"+waypoints+"&key="+API_KEY;
             Log.e("Key",API_KEY);
             return url;
         }
     }
-
-
 }
-

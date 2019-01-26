@@ -20,14 +20,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity"/>
-        <activity android:name=".DriverActivity"/>
         <activity android:name=".AdminMainActivity"/>
-        <activity android:name=".signupAdmin"/>
-        <activity android:name=".signupEmployee"/>
-        <activity android:name=".StartupActivity"/>
+        <activity android:name=".CleanerMainActivity"/>
+        <activity android:name=".DoctorMainActivity"/>
+        <activity android:name=".SignUp"/>
+        <activity android:name=".ValidationByAdmin"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAaePoPKF2O8agR5O8m_0E4E4_6Xudbkq4"/>
+            android:value="AIzaSyDqowUSwGzB2sTv-9DocdhDU3ylol0s9_U"/>
     </application>
 
 </manifest>

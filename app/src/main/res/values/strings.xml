@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Hack</string>
+    <string-array name="choices">
+        <item>admin</item>
+        <item>medicalHelp</item>
+        <item>cleaner</item>
+    </string-array>
 </resources>

@@ -1,22 +1,19 @@
 package com.example.aryan.hack;
 
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TextInputEditText;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.SpannableString;
+import android.os.Bundle;
+
+import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.design.widget.TextInputEditText;
 import android.text.TextUtils;
-import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +23,6 @@ import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.database.DatabaseReference;
@@ -39,59 +35,67 @@ import java.util.concurrent.TimeUnit;
  * Created by Mehul Garg on 01-09-2018.
  */
 
-public class signupEmployee extends AppCompatActivity {
+public class SignUp extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
 
     private TextInputEditText name_field;
     private TextInputEditText num_field;
     private TextInputEditText city_field;
     private TextInputEditText password_field;
-    private TextInputEditText pref1_field;
-    private TextInputEditText pref2_field;
-    private TextView login;
+    private TextInputEditText place_field;
+    private Spinner sp;
     String mVerificationId;
     PhoneAuthProvider.ForceResendingToken mResendToken;
     private Button signUp;
     private ProgressBar progressBar;
     DatabaseReference databaseRef,databaseRef2;
     private FirebaseAuth mAuth;
-// ...
+    private String role;
+    String num;
+    // ...
 // Initialize Firebase Auth
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.signup_employee);
+        setContentView(R.layout.activity_sign_up);
         mAuth = FirebaseAuth.getInstance();
         progressBar = findViewById(R.id.progressBar);
-        login=findViewById(R.id.login);
         signUp=findViewById(R.id.signUp_button);
         name_field = findViewById(R.id.name1);
         num_field = findViewById(R.id.mobile1);
         city_field = findViewById(R.id.cityofService1);
-        pref1_field = findViewById(R.id.area1);
-        pref2_field = findViewById(R.id.area2);
+        place_field = findViewById(R.id.place);
         password_field = findViewById(R.id.password1);
+        sp = findViewById(R.id.spinner2);
 
+        // spinner code
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.choices, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sp.setAdapter(adapter);
+        sp.setOnItemSelectedListener(this);
 
         signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 write_data();
+                go_to_respective_activity();
             }
         });
 
     }
 
+
+
     void write_data(){
 
         final String name = name_field.getText().toString();
         final String city = city_field.getText().toString();
-        final String num = num_field.getText().toString();
+        num = num_field.getText().toString();
         final String password = password_field.getText().toString();
-        final String prefArea1 = pref1_field.getText().toString();
-        final String prefArea2 = pref2_field.getText().toString();
+        final String placeName = place_field.getText().toString();
 
         if (TextUtils.isEmpty(city) || TextUtils.isEmpty(password) || TextUtils.isEmpty(name)
-                || TextUtils.isEmpty(num) || TextUtils.isEmpty(prefArea1) || TextUtils.isEmpty(prefArea2)){
+                || TextUtils.isEmpty(num) || TextUtils.isEmpty(placeName)){
 
             Toast.makeText(getApplicationContext(), "All fields not filled !!", Toast.LENGTH_SHORT).show();
             return;
@@ -110,21 +114,24 @@ public class signupEmployee extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
 
 
-        Employee employee = new Employee(name, password);
         //Added data to database
-        databaseRef = FirebaseDatabase.getInstance().getReference("Employee");
-        final String key1 =  city.toLowerCase();
-        final String key = num;
-        databaseRef.child(key1).child(key).setValue(employee);
-
+        databaseRef = FirebaseDatabase.getInstance().getReference("gatherings");
+        final String key1 = placeName.toLowerCase().replaceAll(" ","");
+        AuthDetails authDetails = new AuthDetails(name, password);
+        databaseRef.child(key1).child(role).child(num).setValue(authDetails);
         // session created using sharedPreference
         SessionManager sessionManager = new SessionManager(getApplicationContext());
-        sessionManager.createLoginSession(key1+"_"+key,"Employee");
+        sessionManager.createLoginSession(num,role,placeName);
 
-        databaseRef2 = FirebaseDatabase.getInstance().getReference("Requests");
-        PreferenceRequest preferenceRequest = new PreferenceRequest(name, prefArea1, prefArea2);
-        String keyreq = databaseRef2.child(city).push().getKey();
-        databaseRef2.child(city).child(keyreq).setValue(preferenceRequest);
+        //add request for validation by admin
+
+        databaseRef2 = FirebaseDatabase.getInstance().getReference("gatherings").child(key1);
+        validationRequest request = new validationRequest(name, num, role);
+        String keyreq = databaseRef2.child(city).child(num).getKey();
+        databaseRef2.child("requests").child(keyreq).setValue(request);
+
+        //authentication by phone
+
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
                 num,        // Phone number to verify
                 60,                 // Timeout duration
@@ -146,22 +153,7 @@ public class signupEmployee extends AppCompatActivity {
                         super.onCodeSent(s, forceResendingToken);
                         mVerificationId = s;
                         mResendToken = forceResendingToken;
-//                        AlertDialog.Builder builder = new AlertDialog.Builder(signupEmployee.this);
-//                        final EditText input = new EditText(signupEmployee.this);
-//                        input.setHint("Verification Code");
-//                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-//                                LinearLayout.LayoutParams.MATCH_PARENT,
-//                                LinearLayout.LayoutParams.MATCH_PARENT);
-//                        input.setLayoutParams(lp);
-//                        builder.setView(input);
-//                        builder.setTitle("Enter Verification Code").setNegativeButton("Submit", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialogInterface, int i) {
-//                                Snackbar.make(getCurrentFocus(),"Checking Status Code",Snackbar.LENGTH_LONG).show();
-//                            }
-//                        }).show();
-
-
+                        signInWithPhoneAuthCredential(PhoneAuthProvider.getCredential(mVerificationId, String.valueOf(mResendToken)));
                     }
                 });        // OnVerificationStateChangedCallbacks
 
@@ -173,10 +165,35 @@ public class signupEmployee extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent intent=new Intent(signupEmployee.this, LoginActivity.class);
+        Intent intent=new Intent(SignUp.this, LoginActivity.class);
         startActivity(intent);
         finish();
     }
+
+    void go_to_respective_activity(){
+        if(role.equals("cleaner")){
+            Intent intent=new Intent(SignUp.this, CleanerMainActivity.class);
+            intent.putExtra("number",num);
+            startActivity(intent);
+            finish();
+
+        }
+        else if(role.equals("admin")){
+            Intent intent=new Intent(SignUp.this, AdminMainActivity.class);
+            intent.putExtra("number",num);
+            startActivity(intent);
+            finish();
+
+        }
+        else{
+            Intent intent=new Intent(SignUp.this, DoctorMainActivity.class);
+            intent.putExtra("number",num);
+            startActivity(intent);
+            finish();
+
+        }
+    }
+
     void signInWithPhoneAuthCredential(PhoneAuthCredential phoneAuthCredential)
     {
         mAuth.signInWithCredential(phoneAuthCredential)
@@ -186,8 +203,7 @@ public class signupEmployee extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("TAG", "signInWithCredential:success");
-                            Intent intent = new Intent(signupEmployee.this,DriverActivity.class);
-                            startActivity(intent);
+                            go_to_respective_activity();
                             // ...
                         } else {
                             // Sign in failed, display a message and update the UI
@@ -200,4 +216,17 @@ public class signupEmployee extends AppCompatActivity {
                 });
 
     }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+        role = adapterView.getItemAtPosition(i).toString();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+
 }

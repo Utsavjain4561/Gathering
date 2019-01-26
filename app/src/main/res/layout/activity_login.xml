@@ -10,40 +10,44 @@
     android:id="@+id/scroll"
     >
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="32dp"
-        android:layout_gravity="center"
-        android:text="Login"
-        android:textSize="28dp"
-        android:layout_centerHorizontal="true"
-        android:textColor="@color/colorPrimary" />
+
     <android.support.design.widget.TextInputLayout
         android:layout_height="wrap_content"
-        android:layout_width="match_parent"
         android:id="@+id/phoneLayout"
+        android:layout_width="match_parent"
+        app:passwordToggleEnabled="true"
         android:textColorHint="@color/colorPrimary"
-        app:errorEnabled="true"
-        android:layout_marginTop="30sp"
-        >
+        app:passwordToggleTint="@color/colorPrimary">
 
         <android.support.design.widget.TextInputEditText
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:hint="Phone-Number"
-            android:textColorHint="@color/colorPrimaryDark"
-            android:id="@+id/phone"
-            android:inputType="phone"
-            />
+            android:hint="Phone Number"
+            android:id="@+id/phone" />
     </android.support.design.widget.TextInputLayout>
 
+    <android.support.design.widget.TextInputLayout
+        android:layout_height="wrap_content"
+        android:id="@+id/placeLayout"
+        android:layout_width="match_parent"
+        app:passwordToggleEnabled="true"
+        android:layout_below="@+id/phoneLayout"
+        android:textColorHint="@color/colorPrimary"
+        app:passwordToggleTint="@color/colorPrimary">
+
+        <android.support.design.widget.TextInputEditText
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:hint="Place Of Service"
+            android:id="@+id/place" />
+    </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
         android:layout_height="wrap_content"
         android:id="@+id/passLayout"
         android:layout_width="match_parent"
         app:passwordToggleEnabled="true"
-        android:layout_below="@+id/phoneLayout"
+        android:layout_below="@+id/placeLayout"
         android:textColorHint="@color/colorPrimary"
         app:passwordToggleTint="@color/colorPrimary">
 
@@ -55,26 +59,14 @@
             android:inputType="textPassword"/>
     </android.support.design.widget.TextInputLayout>
 
-    <RadioGroup
+    <Spinner
+        android:id="@+id/spinner1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/radioGroup_type_person"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        android:layout_below="@id/passLayout">
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Admin"
-            android:layout_weight="1"
-            android:textSize="20sp"/>
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Employee"
-            android:layout_weight="1"
-            android:textSize="20sp"/>
-    </RadioGroup>
+        android:background="@android:drawable/btn_dropdown"
+        android:layout_below="@id/passLayout"
+        android:layout_marginTop="20dp"
+        android:spinnerMode="dropdown"/>
 
     <android.support.v7.widget.AppCompatButton
         android:layout_height="40dp"
@@ -85,7 +77,7 @@
         android:textSize="25sp"
         android:id="@+id/login_press"
         android:layout_marginTop="15dp"
-        android:layout_below="@+id/radioGroup_type_person"
+        android:layout_below="@+id/spinner1"
         android:layout_marginBottom="5dp"
         />
     <android.support.v7.widget.AppCompatButton
@@ -132,23 +124,12 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Sign up as an Admin"
+            android:text="Sign up"
             android:layout_marginTop="15sp"
             android:textColor="@color/colorAccent"
             android:linksClickable="true"
-            android:id="@+id/goAdmin"
+            android:id="@+id/goSign"
             android:textSize="20sp"
-            android:gravity="center_horizontal"
-            />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Sign up as an Employee"
-            android:textSize="20sp"
-            android:layout_marginTop="5sp"
-            android:id="@+id/goEmployee"
-            android:textColor="@color/colorAccent"
-            android:linksClickable="true"
             android:gravity="center_horizontal"
             />
 

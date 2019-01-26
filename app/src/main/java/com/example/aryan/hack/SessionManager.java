@@ -1,5 +1,9 @@
 package com.example.aryan.hack;
 
+/**
+ * Created by user on 1/26/19.
+ */
+
 import java.util.HashMap;
 
 import android.content.Context;
@@ -17,6 +21,7 @@ public class SessionManager {
     private static final String PREF_NAME = "Details";
     private static final String UNIQ_ID = "id";
     public static final String ROLE = "role";
+    public static final String PLACE = "place";
 
     public SessionManager(Context context){
         this._context = context;
@@ -24,10 +29,11 @@ public class SessionManager {
         editor = pref.edit();
     }
 
-    public void createLoginSession(String id, String role){
+    public void createLoginSession(String id, String role,String place){
 
         editor.putString(UNIQ_ID, id);
         editor.putString(ROLE, role);
+        editor.putString(PLACE,place);
         editor.commit();
     }
 
@@ -35,6 +41,7 @@ public class SessionManager {
         HashMap<String, String> user = new HashMap<String, String>();
         user.put(UNIQ_ID, pref.getString(UNIQ_ID, "Not Found"));
         user.put(ROLE, pref.getString(ROLE, "Not Found"));
+        user.put(PLACE,pref.getString(PLACE, "Not Found"));
         return user;
     }
     public void logoutUser(){

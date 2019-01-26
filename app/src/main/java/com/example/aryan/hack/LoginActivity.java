@@ -10,10 +10,13 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.UnderlineSpan;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,18 +32,18 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
 
-    private TextView admin, employee;
     private Button login, guestLogin;
-    private TextInputEditText inputPhone, inputPassword;
+    private TextView signUp;
+    private Spinner spinner;
+    private TextInputEditText inputPhone, inputPassword, inputPlace;
     private Button forgot_password;
     private FirebaseAuth auth;
-    private RadioGroup radioGroup_type;
     private ProgressBar progressBar;
-    private DatabaseReference databaseRef;
-    private String phone, password;
-    private int flag = -1;
+    private DatabaseReference databaseRef, databaseRef2;
+    private String phone, password, tmp1, tmp3, role, place;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,31 +54,37 @@ public class LoginActivity extends AppCompatActivity {
         if (auth.getCurrentUser() != null) {
             SessionManager sm = new SessionManager(getApplicationContext());
             HashMap<String, String> details = sm.getUserDetails();
-            String tmp1 = details.get("id");
-            String tmp2 = details.get("role");
-            if (!TextUtils.isEmpty(tmp1) && !TextUtils.isEmpty(tmp2)) {
+            tmp1 = details.get("id");
+            role = details.get("role");
+            tmp3 = details.get("place");
+            if (!TextUtils.isEmpty(tmp1) && !TextUtils.isEmpty(role)) {
                 Toast.makeText(this, "User " + tmp1 + " logged in", Toast.LENGTH_SHORT).show();
 
-                if (tmp2.equals("admin")) {
-                    goto_Admin();
-                } else {
-                    goto_Employee();
-                }
+                go_to_respective_activity();
             }
         }
 
-        setContentView(R.layout.login);
+        setContentView(R.layout.activity_login);
 
-        admin = findViewById(R.id.goAdmin);
-        employee = findViewById(R.id.goEmployee);
         login = findViewById(R.id.login_press);
         guestLogin = findViewById(R.id.guest_login_press);
-        radioGroup_type = findViewById(R.id.radioGroup_type_person);
+        signUp = findViewById(R.id.goSign);
+        inputPlace = findViewById(R.id.place);
         inputPhone = findViewById(R.id.phone);
         inputPassword = findViewById(R.id.password);
         forgot_password = findViewById(R.id.btn_reset_password);
         progressBar = findViewById(R.id.progressBar);
+        spinner = findViewById(R.id.spinner1);
         auth = FirebaseAuth.getInstance();
+
+        // spinner list adapter population code
+
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.choices, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+
 
         guestLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,19 +93,11 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        admin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, signupAdmin.class);
-                startActivity(intent);
-                finish();
-            }
-        });
 
-        employee.setOnClickListener(new View.OnClickListener() {
+        signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, signupEmployee.class);
+                Intent intent = new Intent(LoginActivity.this, SignUp.class);
                 startActivity(intent);
                 finish();
             }
@@ -107,7 +108,9 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 phone = inputPhone.getText().toString();
+                Toast.makeText(LoginActivity.this,phone,Toast.LENGTH_SHORT).show();
                 password = inputPassword.getText().toString();
+                place = inputPlace.getText().toString().toLowerCase().replaceAll(" ","");
 
                 if (TextUtils.isEmpty(phone)) {
                     Snackbar snackbar = Snackbar.make(v, "Enter Phone!", Snackbar.LENGTH_LONG);
@@ -123,7 +126,58 @@ public class LoginActivity extends AppCompatActivity {
 
                 progressBar.setVisibility(View.VISIBLE);
 
+
                 //authenticate user
+                databaseRef = FirebaseDatabase.getInstance().getReference("gatherings");
+                databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+
+                            String primKey = snapshot.getKey();
+                            Toast.makeText(LoginActivity.this,primKey,Toast.LENGTH_SHORT).show();
+                            if(primKey.equals(place)){
+                                databaseRef2 = FirebaseDatabase.getInstance().getReference("gatherings");
+                                databaseRef2.child(primKey).child(role).child(phone).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        if(dataSnapshot.exists()){
+                                            AuthDetails authDetails = dataSnapshot.getValue(AuthDetails.class);
+                                            if(authDetails.getPassword().equals(password)){
+
+                                                Toast.makeText(getApplicationContext(), "Logged in!!", Toast.LENGTH_SHORT).show();
+                                                go_to_respective_activity();
+
+                                            }
+                                            else{
+                                                Toast.makeText(getApplicationContext(), "password not matched", Toast.LENGTH_SHORT).show();
+                                            }
+
+                                        }
+                                        else{
+                                            Toast.makeText(getApplicationContext(), "not exist", Toast.LENGTH_SHORT).show();
+
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+                            }
+
+
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
 
 
             }
@@ -140,17 +194,39 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    void go_to_respective_activity(){
+        if(role.equals("cleaner")){
+            Intent intent=new Intent(LoginActivity.this, CleanerMainActivity.class);
+            intent.putExtra("number", inputPhone.getText().toString());
+            startActivity(intent);
+            finish();
 
-    void goto_Admin() {
-        Intent intent = new Intent(LoginActivity.this, AdminMainActivity.class);
-        startActivity(intent);
-        finish();
+        }
+        else if(role.equals("admin")){
+            Intent intent=new Intent(LoginActivity.this, AdminMainActivity.class);
+            intent.putExtra("number", inputPhone.getText().toString());
+            startActivity(intent);
+            finish();
+
+        }
+        else{
+            Intent intent=new Intent(LoginActivity.this, DoctorMainActivity.class);
+            intent.putExtra("number", inputPhone.getText().toString());
+            startActivity(intent);
+            finish();
+
+        }
     }
 
-    void goto_Employee() {
-        Intent intent = new Intent(LoginActivity.this, DriverActivity.class);
-        startActivity(intent);
-        finish();
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        role = adapterView.getItemAtPosition(i).toString();
+        Toast.makeText(getApplicationContext(),role,Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
     }
 
     String RadioButtonSelect(int selectId) {
