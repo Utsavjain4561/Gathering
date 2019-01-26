@@ -19,6 +19,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -34,7 +35,8 @@ public class AddItem extends AppCompatActivity {
     private EditText endDateText;
     private EditText locationText;
     private String location="";
-
+    private String lat="";
+    private String lng="";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +48,7 @@ public class AddItem extends AppCompatActivity {
         locationText = findViewById(R.id.location);
         Button ok = (Button) findViewById(R.id.ok);
 
+
         final PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -53,6 +56,8 @@ public class AddItem extends AppCompatActivity {
             public void onPlaceSelected(Place place) {
                 Log.e("Place name",String.valueOf(place.getName()));
                 location = String.valueOf(place.getName());
+                lat  = String.valueOf(place.getLatLng().latitude);
+                lng = String.valueOf(place.getLatLng().longitude);
             }
 
             @Override
@@ -149,7 +154,7 @@ public class AddItem extends AppCompatActivity {
 
                 // new event added
                 String eventname = String.valueOf(eventName.getText());
-                Event newEvent = new Event(eventname, startDate[0], endDate[0],location);
+                Event newEvent = new Event(eventname, startDate[0], endDate[0],location,lat,lng);
                 DatabaseReference mDatabase;
                 mDatabase = FirebaseDatabase.getInstance().getReference("gatherings").child("kumbhmela").child("events");
                 mDatabase.push().setValue(newEvent);
