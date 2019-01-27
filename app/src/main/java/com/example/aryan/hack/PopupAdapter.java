@@ -28,7 +28,6 @@ public class PopupAdapter implements GoogleMap.InfoWindowAdapter {
             popup=inflater.inflate(R.layout.popup, null);
         }
         TextView tv=(TextView)popup.findViewById(R.id.head);
-
         tv.setText(marker.getTitle());
         tv=(TextView)popup.findViewById(R.id.snippet);
         tv.setText(marker.getSnippet());

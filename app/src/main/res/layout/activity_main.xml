@@ -1,25 +1,52 @@
 <RelativeLayout android:layout_height="match_parent"
     android:layout_width="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_width="match_parent">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <fragment
-        android:id="@+id/place_autocomplete_fragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-        />
-    </android.support.v7.widget.Toolbar>
+
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/map"
-        android:layout_below="@id/toolbar"
-        tools:context=".MainActivity"
-        android:name="com.google.android.gms.maps.SupportMapFragment" />
 
+        tools:context=".MainActivity"
+
+        android:name="com.google.android.gms.maps.SupportMapFragment" />
+    <android.support.v4.widget.SwipeRefreshLayout
+
+        android:id="@+id/swiperefresh"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:padding="8dp"
+
+        android:layout_marginTop="10dp">
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            app:titleTextColor="@color/black"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_width="wrap_content"
+            android:background="#FFFFFF"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Dark"
+            >
+
+            <fragment
+                android:id="@+id/place_autocomplete_fragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+                />
+        </android.support.v7.widget.Toolbar>
+    </android.support.v4.widget.SwipeRefreshLayout>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_add_location_black_24dp"
+        android:id="@+id/iv"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:paddingRight="20dp"
+        android:paddingBottom="20dp"/>
 </RelativeLayout>

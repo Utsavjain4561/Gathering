@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:paddingLeft="30dp"
+    android:paddingRight="30dp"
+    android:paddingTop="20dp"
+    android:id="@+id/scroll"
+    >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:text="Login"
+        android:textSize="28dp"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/colorPrimary" />
+    <android.support.design.widget.TextInputLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/phoneLayout"
+        android:textColorHint="@color/colorPrimary"
+        app:errorEnabled="true"
+        android:layout_marginTop="30sp"
+        >
+
+        <android.support.design.widget.TextInputEditText
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:hint="Phone-Number"
+            android:textColorHint="@color/colorPrimaryDark"
+            android:id="@+id/phone"
+            android:inputType="phone"
+            />
+    </android.support.design.widget.TextInputLayout>
+
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_height="wrap_content"
+        android:id="@+id/passLayout"
+        android:layout_width="match_parent"
+        app:passwordToggleEnabled="true"
+        android:layout_below="@+id/phoneLayout"
+        android:textColorHint="@color/colorPrimary"
+        app:passwordToggleTint="@color/colorPrimary">
+
+        <android.support.design.widget.TextInputEditText
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:hint="Password"
+            android:id="@+id/password"
+            android:inputType="textPassword"/>
+    </android.support.design.widget.TextInputLayout>
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/radioGroup_type_person"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/passLayout">
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Admin"
+            android:layout_weight="1"
+            android:textSize="20sp"/>
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Employee"
+            android:layout_weight="1"
+            android:textSize="20sp"/>
+    </RadioGroup>
+
+    <android.support.v7.widget.AppCompatButton
+        android:layout_height="40dp"
+        android:layout_width="match_parent"
+        android:text="Login"
+        android:textColor="@color/colorPrimaryDark"
+        android:background="#ff9e00"
+        android:textSize="25sp"
+        android:id="@+id/login_press"
+        android:layout_marginTop="15dp"
+        android:layout_below="@+id/radioGroup_type_person"
+        android:layout_marginBottom="5dp"
+        />
+    <android.support.v7.widget.AppCompatButton
+        android:layout_height="40dp"
+        android:layout_width="match_parent"
+        android:text="Guest Login"
+        android:textColor="@color/colorPrimaryDark"
+        android:background="#ff9e00"
+        android:textSize="25sp"
+        android:id="@+id/guest_login_press"
+        android:layout_marginTop="5dp"
+        android:layout_below="@id/login_press"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="bottom"
+        android:id="@+id/linear1"
+        android:gravity="bottom"
+        android:layout_marginBottom="10dp"
+        android:layout_below="@id/guest_login_press"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_reset_password"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:text="Forgot password?"
+            android:textAllCaps="false"
+            android:textColor="@color/colorAccent" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Not a member yet? "
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sign up as an Admin"
+            android:layout_marginTop="15sp"
+            android:textColor="@color/colorAccent"
+            android:linksClickable="true"
+            android:id="@+id/goAdmin"
+            android:textSize="20sp"
+            android:gravity="center_horizontal"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sign up as an Employee"
+            android:textSize="20sp"
+            android:layout_marginTop="5sp"
+            android:id="@+id/goEmployee"
+            android:textColor="@color/colorAccent"
+            android:linksClickable="true"
+            android:gravity="center_horizontal"
+            />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/progress_bar"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</RelativeLayout>
