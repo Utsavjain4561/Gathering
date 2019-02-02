@@ -22,15 +22,17 @@ public class PagerAdapter extends FragmentPagerAdapter {
         if(position ==0){
             return new EventFragment();
         }
-        else{
-            return new TabFragment1();
+        else if(position == 1){
+            return new RequestListForAdmin();
         }
+        else
+            return new ReviewListForAdmin();
 
     }
 
     @Override
     public int getCount() {
-        return 2;
+        return 3;
     }
 
     @Override
@@ -38,9 +40,10 @@ public class PagerAdapter extends FragmentPagerAdapter {
         String title="";
         if(position==0)
             title = "Events";
+        else if(position == 1)
+            title = "Requests";
         else
-            title = "Tab 2";
-
+            title = "Reviews";
         return title;
     }
 }
