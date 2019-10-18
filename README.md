@@ -16,3 +16,5 @@ It is an android application based on the theme of gathering. Event organizers h
 - [Kartik Mahendru](https://github.com/kartikMahendru)
 - [Mehul Garg](https://github.com/gargmehul10)
 - [Utsav Jain](https://github.com/Utsavjain4561)
+
+//Delete this pr and I will kill you !!
