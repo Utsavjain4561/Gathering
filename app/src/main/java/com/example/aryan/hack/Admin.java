@@ -9,6 +9,7 @@ public class Admin {
     private String adminName;
     private String phoneNumber;
     private String password;
+    private String uname;
 
     public Admin(String adminName, String phoneNumber, String password) {
         this.adminName = adminName;
@@ -27,5 +28,9 @@ public class Admin {
 
     public String getPassword() {
         return password;
+    }
+    
+    public String getUserName() {
+        return uname;
     }
 }
